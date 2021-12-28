@@ -27,9 +27,9 @@ func New(db *sql.DB) *Budgets {
 }
 
 func (b *Budgets) Handle(w http.ResponseWriter, req *http.Request) {
-	hasID := regexp.MustCompile(`/[0-9]+$`)
 	switch req.Method {
 	case "GET":
+		hasID := regexp.MustCompile(`/[0-9]+$`)
 		if hasID.MatchString(req.URL.Path) {
 			b.fetch(w, req)
 		} else {
@@ -39,6 +39,8 @@ func (b *Budgets) Handle(w http.ResponseWriter, req *http.Request) {
 		b.upsert(w, req)
 	case "PATCH":
 		w.WriteHeader(http.StatusNotImplemented)
+	case "DELETE":
+		b.delete(w, req)
 	default:
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, "Unsupported method %s", req.Method)
@@ -175,4 +177,30 @@ func (b *Budgets) upsert(w http.ResponseWriter, req *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
+}
+
+func (b *Budgets) delete(w http.ResponseWriter, req *http.Request) {
+	const q = "DELETE FROM budgets WHERE id = ?;"
+
+	var (
+		id  int
+		err error
+	)
+
+	idStr := req.URL.Path[strings.LastIndex(req.URL.Path, "/")+1:]
+	id, err = strconv.Atoi(idStr)
+	if err != nil || id < 1 {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Invalid ID: %s\n", idStr)
+		return
+	}
+
+	_, err = b.db.Exec(q, id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Could not delete budget: %s", err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }

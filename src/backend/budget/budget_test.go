@@ -31,6 +31,8 @@ func TestHandle(t *testing.T) {
 	mock.ExpectExec(`INSERT INTO budgets`).
 		WithArgs(1, "2022-01-01 00:00:00", "2022-12-31 23:59:59", 0).
 		WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectExec(`DELETE FROM budgets WHERE id`).WithArgs(1).
+		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	b := budget.New(db)
 
@@ -75,6 +77,14 @@ func TestHandle(t *testing.T) {
 	b.Handle(w, req)
 	if w.Result().StatusCode != http.StatusCreated {
 		t.Fatalf("Status code = %d, want %d\n", w.Result().StatusCode, http.StatusCreated)
+	}
+
+	// Delete
+	w = httptest.NewRecorder()
+	req = httptest.NewRequest(http.MethodDelete, "/api/budgets/1", nil)
+	b.Handle(w, req)
+	if w.Result().StatusCode != http.StatusNoContent {
+		t.Fatalf("Status code = %d, want %d\n", w.Result().StatusCode, http.StatusNoContent)
 	}
 
 	if err := mock.ExpectationsWereMet(); err != nil {
