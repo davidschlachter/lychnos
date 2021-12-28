@@ -7,12 +7,7 @@ import (
 )
 
 func TestSetupDB(t *testing.T) {
-	var (
-		mock sqlmock.Sqlmock
-		err  error
-	)
-
-	db, mock, err = sqlmock.New()
+	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("Unexpected error opening mock database connection: %s\n", err)
 	}
