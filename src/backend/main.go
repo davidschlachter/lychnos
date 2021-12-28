@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/davidschlachter/lychnos/src/backend/budget"
+	"github.com/davidschlachter/lychnos/src/backend/categorybudget"
 )
 
 func main() {
@@ -18,6 +19,9 @@ func main() {
 
 	b := budget.New(db)
 	http.HandleFunc("/api/budgets/", b.Handle)
+
+	c := categorybudget.New(db)
+	http.HandleFunc("/api/categorybudgets/", c.Handle)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
