@@ -1,4 +1,4 @@
-package main
+package budget_test
 
 import (
 	"net/http"
@@ -7,15 +7,12 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/davidschlachter/lychnos/src/backend/budget"
 )
 
-func TestCreateAndList(t *testing.T) {
-	var (
-		mock sqlmock.Sqlmock
-		err  error
-	)
+func TestHandle(t *testing.T) {
 
-	db, mock, err = sqlmock.New()
+	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("Unexpected error opening mock database connection: %s\n", err)
 	}
@@ -28,10 +25,12 @@ func TestCreateAndList(t *testing.T) {
 		WillReturnRows(sqlmock.NewRows([]string{"id", "start", "end", "reporting_interval"}).
 			AddRow(1, "2021-01-01 00:00:00", "2021-12-31 23:59:59", 0))
 
+	b := budget.New(db)
+
 	w := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPost, "/api/budget", strings.NewReader("start=2021-01-01%2000%3A00%3A00&end=2021-12-31%2023%3A59%3A59"))
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	create(w, req)
+	b.Handle(w, req)
 
 	if w.Result().StatusCode != http.StatusCreated {
 		t.Fatalf("Status code = %d, want %d\n", w.Result().StatusCode, http.StatusCreated)
@@ -39,7 +38,7 @@ func TestCreateAndList(t *testing.T) {
 
 	w = httptest.NewRecorder()
 	req = httptest.NewRequest(http.MethodGet, "/api/budget", nil)
-	list(w, req)
+	b.Handle(w, req)
 
 	if w.Result().StatusCode != http.StatusOK {
 		t.Fatalf("Status code = %d, want %d\n", w.Result().StatusCode, http.StatusOK)

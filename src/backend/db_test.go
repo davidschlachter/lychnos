@@ -6,14 +6,8 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 )
 
-// a successful case
-func TestShouldUpdateStats(t *testing.T) {
-	var (
-		mock sqlmock.Sqlmock
-		err  error
-	)
-
-	db, mock, err = sqlmock.New()
+func TestSetupDB(t *testing.T) {
+	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("Unexpected error opening mock database connection: %s\n", err)
 	}
