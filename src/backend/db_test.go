@@ -6,8 +6,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 )
 
-// a successful case
-func TestShouldUpdateStats(t *testing.T) {
+func TestSetupDB(t *testing.T) {
 	var (
 		mock sqlmock.Sqlmock
 		err  error
