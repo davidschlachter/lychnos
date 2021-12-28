@@ -36,7 +36,7 @@ func (b *Budgets) Handle(w http.ResponseWriter, req *http.Request) {
 			b.list(w, req)
 		}
 	case "POST":
-		b.create(w, req)
+		b.upsert(w, req)
 	case "PATCH":
 		w.WriteHeader(http.StatusNotImplemented)
 	default:
@@ -94,7 +94,7 @@ func (b *Budgets) list(w http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(w).Encode(budgets)
 }
 
-func (b *Budgets) create(w http.ResponseWriter, req *http.Request) {
+func (b *Budgets) upsert(w http.ResponseWriter, req *http.Request) {
 	const (
 		q      = "INSERT INTO budgets VALUES(?, ?, ?, ?)"
 		format = "2006-01-02 15:04:05"
@@ -103,6 +103,7 @@ func (b *Budgets) create(w http.ResponseWriter, req *http.Request) {
 	var (
 		err      error
 		interval int
+		id       int
 	)
 
 	err = req.ParseForm()
@@ -113,6 +114,17 @@ func (b *Budgets) create(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Get parameters
+	idStr := req.Form.Get("id")
+	if len(idStr) == 0 {
+		id = 0
+	} else {
+		id, err = strconv.Atoi(idStr)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Could not parse ID: %s\n", idStr)
+			return
+		}
+	}
 	startString := req.Form.Get("start")
 	endString := req.Form.Get("end")
 	if len(startString) == 0 || len(endString) == 0 {
@@ -155,7 +167,7 @@ func (b *Budgets) create(w http.ResponseWriter, req *http.Request) {
 	// date ranges of any other one
 
 	// Insert the budget into the database
-	_, err = b.db.Exec(q, nil, start.Format(format), end.Format(format), interval)
+	_, err = b.db.Exec(q, id, start.Format(format), end.Format(format), interval)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "Could not insert budget: %s", err)
