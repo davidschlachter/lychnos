@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -27,18 +29,74 @@ func New(db *sql.DB) *Budgets {
 func (b *Budgets) Handle(w http.ResponseWriter, req *http.Request) {
 	switch req.Method {
 	case "GET":
-		b.list(w, req)
+		hasID := regexp.MustCompile(`/[0-9]+$`)
+		if hasID.MatchString(req.URL.Path) {
+			b.fetch(w, req)
+		} else {
+			b.list(w, req)
+		}
 	case "POST":
-		b.create(w, req)
+		b.upsert(w, req)
 	case "PATCH":
 		w.WriteHeader(http.StatusNotImplemented)
+	case "DELETE":
+		b.delete(w, req)
 	default:
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, "Unsupported method %s", req.Method)
 	}
 }
 
-func (b *Budgets) create(w http.ResponseWriter, req *http.Request) {
+func (b *Budgets) fetch(w http.ResponseWriter, req *http.Request) {
+	const q = "SELECT id, start, end, reporting_interval FROM budgets WHERE id = ?;"
+
+	id := req.URL.Path[strings.LastIndex(req.URL.Path, "/")+1:]
+	if _, err := strconv.Atoi(id); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Could not parse budget ID: %s\n", id)
+		return
+	}
+
+	row := b.db.QueryRow(q, id)
+	if err := row.Err(); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Could not fetch budgets: %s", err)
+		return
+	}
+
+	var budgets []Budget
+
+	var bgt Budget
+	row.Scan(&bgt.ID, &bgt.Start, &bgt.End, &bgt.ReportingInterval)
+	budgets = append(budgets, bgt)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(budgets)
+}
+
+func (b *Budgets) list(w http.ResponseWriter, req *http.Request) {
+	const q = "SELECT id, start, end, reporting_interval FROM budgets;"
+	rows, err := b.db.Query(q)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Could not list budgets: %s", err)
+		return
+	}
+	defer rows.Close()
+
+	var budgets []Budget
+
+	for rows.Next() {
+		var bgt Budget
+		rows.Scan(&bgt.ID, &bgt.Start, &bgt.End, &bgt.ReportingInterval)
+		budgets = append(budgets, bgt)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(budgets)
+}
+
+func (b *Budgets) upsert(w http.ResponseWriter, req *http.Request) {
 	const (
 		q      = "INSERT INTO budgets VALUES(?, ?, ?, ?)"
 		format = "2006-01-02 15:04:05"
@@ -47,6 +105,7 @@ func (b *Budgets) create(w http.ResponseWriter, req *http.Request) {
 	var (
 		err      error
 		interval int
+		id       int
 	)
 
 	err = req.ParseForm()
@@ -57,6 +116,17 @@ func (b *Budgets) create(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Get parameters
+	idStr := req.Form.Get("id")
+	if len(idStr) == 0 {
+		id = 0
+	} else {
+		id, err = strconv.Atoi(idStr)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Could not parse ID: %s\n", idStr)
+			return
+		}
+	}
 	startString := req.Form.Get("start")
 	endString := req.Form.Get("end")
 	if len(startString) == 0 || len(endString) == 0 {
@@ -99,7 +169,7 @@ func (b *Budgets) create(w http.ResponseWriter, req *http.Request) {
 	// date ranges of any other one
 
 	// Insert the budget into the database
-	_, err = b.db.Exec(q, nil, start.Format(format), end.Format(format), interval)
+	_, err = b.db.Exec(q, id, start.Format(format), end.Format(format), interval)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "Could not insert budget: %s", err)
@@ -109,24 +179,28 @@ func (b *Budgets) create(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-func (b *Budgets) list(w http.ResponseWriter, req *http.Request) {
-	const q = "SELECT id, start, end, reporting_interval FROM budgets;"
-	rows, err := b.db.Query(q)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Could not list budgets: %s", err)
+func (b *Budgets) delete(w http.ResponseWriter, req *http.Request) {
+	const q = "DELETE FROM budgets WHERE id = ?;"
+
+	var (
+		id  int
+		err error
+	)
+
+	idStr := req.URL.Path[strings.LastIndex(req.URL.Path, "/")+1:]
+	id, err = strconv.Atoi(idStr)
+	if err != nil || id < 1 {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Invalid ID: %s\n", idStr)
 		return
 	}
-	defer rows.Close()
 
-	var budgets []Budget
-
-	for rows.Next() {
-		var b Budget
-		rows.Scan(&b.ID, &b.Start, &b.End, &b.ReportingInterval)
-		budgets = append(budgets, b)
+	_, err = b.db.Exec(q, id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Could not delete budget: %s", err)
+		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(budgets)
+	w.WriteHeader(http.StatusNoContent)
 }
