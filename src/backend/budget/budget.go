@@ -37,12 +37,10 @@ func (b *Budgets) Handle(w http.ResponseWriter, req *http.Request) {
 		}
 	case "POST":
 		b.upsert(w, req)
-	case "PATCH":
-		w.WriteHeader(http.StatusNotImplemented)
 	case "DELETE":
 		b.delete(w, req)
 	default:
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusNotImplemented)
 		fmt.Fprintf(w, "Unsupported method %s", req.Method)
 	}
 }
@@ -60,7 +58,7 @@ func (b *Budgets) fetch(w http.ResponseWriter, req *http.Request) {
 	row := b.db.QueryRow(q, id)
 	if err := row.Err(); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Could not fetch budgets: %s", err)
+		fmt.Fprintf(w, "Could not fetch budget: %s", err)
 		return
 	}
 
@@ -172,7 +170,7 @@ func (b *Budgets) upsert(w http.ResponseWriter, req *http.Request) {
 	_, err = b.db.Exec(q, id, start.Format(format), end.Format(format), interval)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Could not insert budget: %s", err)
+		fmt.Fprintf(w, "Could not upsert budget: %s", err)
 		return
 	}
 
