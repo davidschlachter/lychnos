@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -25,9 +27,14 @@ func New(db *sql.DB) *Budgets {
 }
 
 func (b *Budgets) Handle(w http.ResponseWriter, req *http.Request) {
+	hasID := regexp.MustCompile(`/[0-9]+$`)
 	switch req.Method {
 	case "GET":
-		b.list(w, req)
+		if hasID.MatchString(req.URL.Path) {
+			b.fetch(w, req)
+		} else {
+			b.list(w, req)
+		}
 	case "POST":
 		b.create(w, req)
 	case "PATCH":
@@ -36,6 +43,55 @@ func (b *Budgets) Handle(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, "Unsupported method %s", req.Method)
 	}
+}
+
+func (b *Budgets) fetch(w http.ResponseWriter, req *http.Request) {
+	const q = "SELECT id, start, end, reporting_interval FROM budgets WHERE id = ?;"
+
+	id := req.URL.Path[strings.LastIndex(req.URL.Path, "/")+1:]
+	if _, err := strconv.Atoi(id); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Could not parse budget ID: %s\n", id)
+		return
+	}
+
+	row := b.db.QueryRow(q, id)
+	if err := row.Err(); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Could not fetch budgets: %s", err)
+		return
+	}
+
+	var budgets []Budget
+
+	var bgt Budget
+	row.Scan(&bgt.ID, &bgt.Start, &bgt.End, &bgt.ReportingInterval)
+	budgets = append(budgets, bgt)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(budgets)
+}
+
+func (b *Budgets) list(w http.ResponseWriter, req *http.Request) {
+	const q = "SELECT id, start, end, reporting_interval FROM budgets;"
+	rows, err := b.db.Query(q)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Could not list budgets: %s", err)
+		return
+	}
+	defer rows.Close()
+
+	var budgets []Budget
+
+	for rows.Next() {
+		var bgt Budget
+		rows.Scan(&bgt.ID, &bgt.Start, &bgt.End, &bgt.ReportingInterval)
+		budgets = append(budgets, bgt)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(budgets)
 }
 
 func (b *Budgets) create(w http.ResponseWriter, req *http.Request) {
@@ -107,26 +163,4 @@ func (b *Budgets) create(w http.ResponseWriter, req *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
-}
-
-func (b *Budgets) list(w http.ResponseWriter, req *http.Request) {
-	const q = "SELECT id, start, end, reporting_interval FROM budgets;"
-	rows, err := b.db.Query(q)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Could not list budgets: %s", err)
-		return
-	}
-	defer rows.Close()
-
-	var budgets []Budget
-
-	for rows.Next() {
-		var b Budget
-		rows.Scan(&b.ID, &b.Start, &b.End, &b.ReportingInterval)
-		budgets = append(budgets, b)
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(budgets)
 }

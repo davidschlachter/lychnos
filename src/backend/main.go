@@ -17,7 +17,7 @@ func main() {
 	})
 
 	b := budget.New(db)
-	http.HandleFunc("/api/budget", b.Handle)
+	http.HandleFunc("/api/budgets/", b.Handle)
 
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
