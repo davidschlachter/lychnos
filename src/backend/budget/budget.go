@@ -114,7 +114,7 @@ func (b *Budgets) List() ([]Budget, error) {
 
 func (b *Budgets) upsert(w http.ResponseWriter, req *http.Request) {
 	const (
-		q      = "INSERT INTO budgets VALUES(?, ?, ?, ?)"
+		q      = "INSERT INTO budgets (id, start, end, reporting_interval) VALUES(?, ?, ?, ?) ON DUPLICATE KEY UPDATE start=VALUES(start), end=VALUES(end), reporting_interval=VALUES(reporting_interval);"
 		format = "2006-01-02 15:04:05"
 	)
 
