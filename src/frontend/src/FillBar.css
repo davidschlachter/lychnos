@@ -1,0 +1,10 @@
+.fillBar {
+    width: 100%;
+    height: 1em;
+    background-color: beige;
+}
+
+.filled {
+    left: 0;
+    height: 1em;
+}

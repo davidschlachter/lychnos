@@ -13,4 +13,8 @@ GRANT ALL PRIVILEGES ON lychnos_db.* TO 'lychnos_user'@'localhost';
 FLUSH PRIVILEGES;
 ```
 
-Then, copy `.env.sample` in `src/backend` to `.env` and update the database connection string. Be sure to load the environment variables from `.env` before starting `lychnos`. The easiest way to start the backend is to `go run .` in `src/backend`.
+Then, copy `.env.sample` in `src/backend` to `.env` and update the database connection string. Be sure to load the environment variables from `.env` before starting `lychnos`. The easiest way to start the backend is to `go run .` in `src/backend`. Since the application does not provide authentication, a reverse proxy should provide access control.
+
+## Deployment
+
+I put the backend behind an nginx reverse proxy for the `/api` path, and put the React frontend into `/app` (served statically with nginx) on the same domain.
