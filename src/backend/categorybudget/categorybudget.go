@@ -194,6 +194,9 @@ func (c *CategoryBudgets) upsert(w http.ResponseWriter, req *http.Request) {
 	// TODO(davidschlachter): check that the new categorybudget has a valid
 	// budget and category ID
 
+	// TODO(davidschlachter): check that we have at most one categorybudget for
+	// each category in a budget
+
 	_, err = c.db.Exec(q, id, budget, category, amount)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
