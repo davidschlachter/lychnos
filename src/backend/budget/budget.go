@@ -46,8 +46,6 @@ func (b *Budgets) Handle(w http.ResponseWriter, req *http.Request) {
 }
 
 func (b *Budgets) fetch(w http.ResponseWriter, req *http.Request) {
-	const q = "SELECT id, start, end, reporting_interval FROM budgets WHERE id = ?;"
-
 	id := req.URL.Path[strings.LastIndex(req.URL.Path, "/")+1:]
 	if _, err := strconv.Atoi(id); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -55,11 +53,23 @@ func (b *Budgets) fetch(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	row := b.db.QueryRow(q, id)
-	if err := row.Err(); err != nil {
+	budgets, err := b.Fetch(id)
+	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "Could not fetch budget: %s", err)
 		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(budgets)
+}
+
+func (b *Budgets) Fetch(id string) ([]Budget, error) {
+	const q = "SELECT id, start, end, reporting_interval FROM budgets WHERE id = ?;"
+
+	row := b.db.QueryRow(q, id)
+	if err := row.Err(); err != nil {
+		return nil, err
 	}
 
 	var budgets []Budget
@@ -68,17 +78,26 @@ func (b *Budgets) fetch(w http.ResponseWriter, req *http.Request) {
 	row.Scan(&bgt.ID, &bgt.Start, &bgt.End, &bgt.ReportingInterval)
 	budgets = append(budgets, bgt)
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(budgets)
+	return budgets, nil
 }
 
 func (b *Budgets) list(w http.ResponseWriter, req *http.Request) {
-	const q = "SELECT id, start, end, reporting_interval FROM budgets;"
-	rows, err := b.db.Query(q)
+	budgets, err := b.List()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "Could not list budgets: %s", err)
 		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(budgets)
+}
+
+func (b *Budgets) List() ([]Budget, error) {
+	const q = "SELECT id, start, end, reporting_interval FROM budgets;"
+	rows, err := b.db.Query(q)
+	if err != nil {
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -90,8 +109,7 @@ func (b *Budgets) list(w http.ResponseWriter, req *http.Request) {
 		budgets = append(budgets, bgt)
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(budgets)
+	return budgets, nil
 }
 
 func (b *Budgets) upsert(w http.ResponseWriter, req *http.Request) {

@@ -47,8 +47,6 @@ func (c *CategoryBudgets) Handle(w http.ResponseWriter, req *http.Request) {
 }
 
 func (c *CategoryBudgets) fetch(w http.ResponseWriter, req *http.Request) {
-	const q = "SELECT id, budget, category, amount FROM category_budgets WHERE id = ?;"
-
 	id := req.URL.Path[strings.LastIndex(req.URL.Path, "/")+1:]
 	if _, err := strconv.Atoi(id); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -56,11 +54,23 @@ func (c *CategoryBudgets) fetch(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	row := c.db.QueryRow(q, id)
-	if err := row.Err(); err != nil {
+	categoryBudgets, err := c.Fetch(id)
+	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "Could not fetch categorybudget: %s", err)
 		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(categoryBudgets)
+}
+
+func (c *CategoryBudgets) Fetch(id string) ([]CategoryBudget, error) {
+	const q = "SELECT id, budget, category, amount FROM category_budgets WHERE id = ?;"
+
+	row := c.db.QueryRow(q, id)
+	if err := row.Err(); err != nil {
+		return nil, err
 	}
 
 	var categoryBudgets []CategoryBudget
@@ -69,18 +79,27 @@ func (c *CategoryBudgets) fetch(w http.ResponseWriter, req *http.Request) {
 	row.Scan(&catBgt.ID, &catBgt.Budget, &catBgt.Category, &catBgt.Amount)
 	categoryBudgets = append(categoryBudgets, catBgt)
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(categoryBudgets)
+	return categoryBudgets, nil
 }
 
 // TODO(davidschlachter): allow filtering, e.g. by budget ID
 func (c *CategoryBudgets) list(w http.ResponseWriter, req *http.Request) {
-	const q = "SELECT id, budget, category, amount FROM category_budgets;"
-	rows, err := c.db.Query(q)
+	categoryBudgets, err := c.List()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "Could not list categorybudget: %s", err)
 		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(categoryBudgets)
+}
+
+func (c *CategoryBudgets) List() ([]CategoryBudget, error) {
+	const q = "SELECT id, budget, category, amount FROM category_budgets;"
+	rows, err := c.db.Query(q)
+	if err != nil {
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -92,8 +111,7 @@ func (c *CategoryBudgets) list(w http.ResponseWriter, req *http.Request) {
 		categoryBudgets = append(categoryBudgets, catBgt)
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(categoryBudgets)
+	return categoryBudgets, nil
 }
 
 func (c *CategoryBudgets) delete(w http.ResponseWriter, req *http.Request) {
@@ -175,6 +193,9 @@ func (c *CategoryBudgets) upsert(w http.ResponseWriter, req *http.Request) {
 
 	// TODO(davidschlachter): check that the new categorybudget has a valid
 	// budget and category ID
+
+	// TODO(davidschlachter): check that we have at most one categorybudget for
+	// each category in a budget
 
 	_, err = c.db.Exec(q, id, budget, category, amount)
 	if err != nil {
