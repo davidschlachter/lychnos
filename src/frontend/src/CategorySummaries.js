@@ -75,7 +75,7 @@ class CategorySummaries extends React.Component {
                         <TableHead>
                             <TableRow>
                                 <TableCell>Category</TableCell>
-                                <TableCell>Spent/Earned this year</TableCell>
+                                <TableCell>Progress</TableCell>
                                 <TableCell>Left&nbsp;per month</TableCell>
                             </TableRow>
                         </TableHead>
