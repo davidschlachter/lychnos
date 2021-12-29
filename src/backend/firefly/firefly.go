@@ -165,7 +165,7 @@ func (f *Firefly) FetchCategoryTotal(catID int, start, end time.Time) ([]Categor
 
 	r := &rawResults.Data
 	if len(r.Attributes.Spent) == 0 && len(r.Attributes.Earned) == 0 {
-		return nil, fmt.Errorf("no earned or spent for category")
+		return nil, ErrNoSpentEarned
 	}
 	var c CategoryTotal
 	var spent, earned decimal.Decimal
