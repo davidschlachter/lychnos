@@ -142,7 +142,7 @@ func (c *CategoryBudgets) delete(w http.ResponseWriter, req *http.Request) {
 
 func (c *CategoryBudgets) upsert(w http.ResponseWriter, req *http.Request) {
 	const (
-		q = "INSERT INTO category_budgets VALUES(?, ?, ?, ?)"
+		q = "INSERT INTO category_budgets (id, budget, category, amount) VALUES(?, ?, ?, ?) ON DUPLICATE KEY UPDATE budget=VALUES(budget), category=VALUES(category), amount=VALUES(amount);"
 	)
 
 	var (
