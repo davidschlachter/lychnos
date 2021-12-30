@@ -3,6 +3,8 @@ package firefly
 import (
 	"fmt"
 	"log"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -135,4 +137,18 @@ func (f *Firefly) RefreshCaches(c *categorybudget.CategoryBudgets, b *budget.Bud
 	}
 
 	return nil
+}
+
+// invalidateCategoryCache will invalidate cache entries related to a particular
+// category. This should be called after creating a transaction.
+func (f *Firefly) invalidateCategoryCache(categoryID string) {
+	f.cache.mu.Lock()
+	defer f.cache.mu.Unlock()
+
+	thisYear := strconv.Itoa(time.Now().Year())
+	for k := range f.cache.CategoryTotals {
+		if strings.HasPrefix(k, thisYear) || strings.HasPrefix(k, categoryID) {
+			delete(f.cache.CategoryTotals, k)
+		}
+	}
 }
