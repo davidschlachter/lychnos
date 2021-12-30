@@ -14,6 +14,7 @@ import (
 type Firefly struct {
 	client     *http.Client
 	token, url string
+	cache      Cache
 }
 
 func New(client *http.Client, token, url string) (*Firefly, error) {
