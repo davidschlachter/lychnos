@@ -17,6 +17,7 @@ import (
 // cache should always be fresh.
 
 type Cache struct {
+	Accounts       []Account
 	Categories     []Category
 	CategoryTotals map[categoryTotalsKey][]CategoryTotal
 	mu             sync.Mutex
@@ -26,6 +27,30 @@ type categoryTotalsKey struct {
 	CategoryID int
 	Start      time.Time
 	End        time.Time
+}
+
+func (f *Firefly) CachedAccounts() ([]Account, error) {
+	f.cache.mu.Lock()
+	defer f.cache.mu.Unlock()
+	if f.cache.Accounts == nil {
+		err := f.refreshAccounts()
+		if err != nil {
+			return nil, err
+		}
+	}
+	return f.cache.Accounts, nil
+}
+
+// refreshCategories refreshes the cached Categories. The caller is responsible
+// for locking the mutex.
+func (f *Firefly) refreshAccounts() error {
+	log.Printf("Updating Accounts cache")
+	c, err := f.ListAccounts("")
+	if err != nil {
+		return err
+	}
+	f.cache.Accounts = c
+	return nil
 }
 
 func (f *Firefly) CachedCategories() ([]Category, error) {
@@ -152,6 +177,7 @@ func (f *Firefly) RefreshCaches(c *categorybudget.CategoryBudgets, b *budget.Bud
 	}
 
 	f.refreshCategories()
+	f.refreshAccounts()
 
 	return nil
 }
@@ -167,4 +193,11 @@ func (f *Firefly) invalidateCategoryCache(tgt categoryTotalsKey) {
 			delete(f.cache.CategoryTotals, k)
 		}
 	}
+}
+
+func (f *Firefly) invalidateAccountsCache() {
+	f.cache.mu.Lock()
+	defer f.cache.mu.Unlock()
+
+	f.cache.Accounts = nil
 }

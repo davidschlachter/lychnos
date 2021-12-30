@@ -20,25 +20,25 @@ func (f *Firefly) HandleTxn(w http.ResponseWriter, req *http.Request) {
 }
 
 type createRequest struct {
-	Transactions []createRequestTransaction `json:"transactions"`
+	Transactions []Transaction `json:"transactions"`
 }
 
-type createRequestTransaction struct {
+type Transaction struct {
 	Type            string `json:"type"`
 	Date            string `json:"date"` // "2018-09-17T12:46:47+01:00"
 	Amount          string `json:"amount"`
 	Description     string `json:"description"`
-	CategoryID      string `json:"category_id"`
-	SourceID        string `json:"source_id"`
-	SourceName      string `json:"source_name"`
-	DestinationID   string `json:"destination_id"`
-	DestinationName string `json:"destination_name"`
+	CategoryID      string `json:"category_id,omitempty"`
+	SourceID        string `json:"source_id,omitempty"`
+	SourceName      string `json:"source_name,omitempty"`
+	DestinationID   string `json:"destination_id,omitempty"`
+	DestinationName string `json:"destination_name,omitempty"`
 }
 
 func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 	// Decode the request
 	decoder := json.NewDecoder(req.Body)
-	var t createRequestTransaction
+	var t Transaction
 	err := decoder.Decode(&t)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -60,12 +60,6 @@ func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 	if !ok {
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, "Could not find Category with ID = '%s'", t.CategoryID)
-		return
-	}
-
-	if t.Type != "withdrawal" && t.Type != "deposit" && t.Type != "transfer" {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Invalid transaction type '%s'", t.Type)
 		return
 	}
 
@@ -101,9 +95,16 @@ func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	t.Type = f.calcTxnType(t.SourceID, t.SourceName, t.DestinationID, t.DestinationName)
+	if t.Type == "" {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Could not determine transaction type")
+		return
+	}
+
 	// Send to the firefly API
 	doc := createRequest{
-		Transactions: []createRequestTransaction{t},
+		Transactions: []Transaction{t},
 	}
 
 	const path = "/api/v1/transactions"
@@ -142,7 +143,53 @@ func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 		End:        txnDate,
 	}
 	f.invalidateCategoryCache(key)
+	f.invalidateAccountsCache()
 
 	w.WriteHeader(http.StatusCreated)
 	fmt.Fprint(w, string(respBody))
+}
+
+const (
+	AcctTypeAsset   = "asset"
+	AcctTypeExpense = "expense"
+	AcctTypeRevenue = "revenue"
+)
+
+// calcTxnType determines whether the transaction is a deposit, withdrawal, or
+// transfer. If source is an asset account and dest is not: withdrawal. If dest
+// is an asset account but source is not: deposit. If both accounts are of the
+// same type: transfer.
+func (f *Firefly) calcTxnType(srcID, srcName, destID, destName string) string {
+	var srcType, destType string
+	accts, _ := f.CachedAccounts()
+	// Find type of existing accounts
+	for _, a := range accts {
+		switch a.ID {
+		case srcID:
+			srcType = a.Attributes.Type
+		case destID:
+			destType = a.Attributes.Type
+		}
+		if srcType != "" && destType != "" {
+			break
+		}
+	}
+	// New accounts are expense accounts
+	// TODO(davidschlachter): maybe support cash accounts one day
+	if srcType == "" && srcName != "" && destType == AcctTypeAsset {
+		srcType = AcctTypeRevenue
+	}
+	if destType == "" && destName != "" && srcType == AcctTypeAsset {
+		destType = AcctTypeExpense
+	}
+	// Determine transaction type
+	if srcType == AcctTypeAsset && destType == AcctTypeExpense {
+		return "withdrawal"
+	} else if srcType == AcctTypeRevenue && destType == AcctTypeAsset {
+		return "deposit"
+	} else if srcType == AcctTypeAsset && destType == AcctTypeAsset {
+		return "transfer"
+	} else {
+		return ""
+	}
 }
