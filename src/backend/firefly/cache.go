@@ -151,6 +151,8 @@ func (f *Firefly) RefreshCaches(c *categorybudget.CategoryBudgets, b *budget.Bud
 		}
 	}
 
+	f.refreshCategories()
+
 	return nil
 }
 
