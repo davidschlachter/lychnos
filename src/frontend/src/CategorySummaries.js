@@ -1,6 +1,7 @@
 import React from 'react';
 import './CategorySummaries.css';
 import FillBar from './FillBar.js'
+import Spinner from './Spinner.js'
 import AmountLeft from './AmountLeft';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -61,7 +62,7 @@ class CategorySummaries extends React.Component {
         if (error) {
             return <div>Error: {error.message}</div>;
         } else if (!isLoaded) {
-            return <div>Loading...</div>;
+            return <Spinner />;
         } else {
             let timeSpent = 0
             if (budgets.length > 1) {
