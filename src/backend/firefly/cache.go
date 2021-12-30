@@ -3,8 +3,6 @@ package firefly
 import (
 	"fmt"
 	"log"
-	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -20,8 +18,14 @@ import (
 
 type Cache struct {
 	Categories     []Category
-	CategoryTotals map[string][]CategoryTotal
+	CategoryTotals map[categoryTotalsKey][]CategoryTotal
 	mu             sync.Mutex
+}
+
+type categoryTotalsKey struct {
+	CategoryID int
+	Start      time.Time
+	End        time.Time
 }
 
 func (f *Firefly) CachedCategories() ([]Category, error) {
@@ -52,39 +56,34 @@ func (f *Firefly) CachedListCategoryTotals(start, end time.Time) ([]CategoryTota
 	f.cache.mu.Lock()
 	defer f.cache.mu.Unlock()
 
-	key := fmt.Sprintf("%s%s", start, end)
+	key := categoryTotalsKey{
+		Start: start,
+		End:   end,
+	}
 	_, ok := f.cache.CategoryTotals[key]
 
 	if !ok {
-		err := f.refreshCategoryTotalsList(start, end, key)
+		err := f.refreshCategoryTotals(key)
 		if err != nil {
 			return nil, err
 		}
 	}
 	return f.cache.CategoryTotals[key], nil
-}
-
-// refreshCategoryTotalsList refreshes the cached CategoryTotalsList. The caller
-// is responsible for locking the mutex.
-func (f *Firefly) refreshCategoryTotalsList(start, end time.Time, key string) error {
-	log.Printf("Updating CategoryTotals cache for: %s, %s", start, end)
-	c, err := f.ListCategoryTotals(start, end)
-	if f.cache.CategoryTotals == nil {
-		f.cache.CategoryTotals = make(map[string][]CategoryTotal)
-	}
-	f.cache.CategoryTotals[key] = c
-	return err
 }
 
 func (f *Firefly) CachedFetchCategoryTotals(catID int, start, end time.Time) ([]CategoryTotal, error) {
 	f.cache.mu.Lock()
 	defer f.cache.mu.Unlock()
 
-	key := fmt.Sprintf("%d%s%s", catID, start, end)
+	key := categoryTotalsKey{
+		CategoryID: catID,
+		Start:      start,
+		End:        end,
+	}
 	_, ok := f.cache.CategoryTotals[key]
 
 	if !ok {
-		err := f.refreshCategoryTotalsFetch(catID, start, end, key)
+		err := f.refreshCategoryTotals(key)
 		if err != nil {
 			return nil, err
 		}
@@ -92,14 +91,22 @@ func (f *Firefly) CachedFetchCategoryTotals(catID int, start, end time.Time) ([]
 	return f.cache.CategoryTotals[key], nil
 }
 
-// refreshCategoryTotalsFetch refreshes the cached CategoryTotalsList. The caller
+// refreshCategoryTotals refreshes a cached CategoryTotalsList. The caller
 // is responsible for locking the mutex.
-func (f *Firefly) refreshCategoryTotalsFetch(catID int, start, end time.Time, key string) error {
-	log.Printf("Updating CategoryTotals cache for: %d, %s, %s", catID, start, end)
+func (f *Firefly) refreshCategoryTotals(key categoryTotalsKey) error {
+	var (
+		c   []CategoryTotal
+		err error
+	)
+	log.Printf("Updating CategoryTotals cache for: %d, %s, %s", key.CategoryID, key.Start, key.End)
 	if f.cache.CategoryTotals == nil {
-		f.cache.CategoryTotals = make(map[string][]CategoryTotal)
+		f.cache.CategoryTotals = make(map[categoryTotalsKey][]CategoryTotal)
 	}
-	c, err := f.FetchCategoryTotal(catID, start, end)
+	if key.CategoryID == 0 {
+		c, err = f.ListCategoryTotals(key.Start, key.End)
+	} else {
+		c, err = f.FetchCategoryTotal(key.CategoryID, key.Start, key.End)
+	}
 	f.cache.CategoryTotals[key] = c
 	return err
 }
@@ -118,7 +125,11 @@ func (f *Firefly) RefreshCaches(c *categorybudget.CategoryBudgets, b *budget.Bud
 		go func(bgt budget.Budget) {
 			f.cache.mu.Lock()
 			defer f.cache.mu.Unlock()
-			_ = f.refreshCategoryTotalsList(bgt.Start, bgt.End, fmt.Sprintf("%s%s", bgt.Start, bgt.End))
+			key := categoryTotalsKey{
+				Start: bgt.Start,
+				End:   bgt.End,
+			}
+			_ = f.refreshCategoryTotals(key)
 		}(bgt)
 		for _, cb := range cbs {
 			if cb.Budget != bgt.ID {
@@ -129,8 +140,12 @@ func (f *Firefly) RefreshCaches(c *categorybudget.CategoryBudgets, b *budget.Bud
 				go func(i interval.ReportingInterval, cb categorybudget.CategoryBudget) {
 					f.cache.mu.Lock()
 					defer f.cache.mu.Unlock()
-					key := fmt.Sprintf("%d%s%s", cb.Category, i.Start, i.End)
-					f.refreshCategoryTotalsFetch(cb.Category, i.Start, i.End, key)
+					key := categoryTotalsKey{
+						CategoryID: cb.Category,
+						Start:      i.Start,
+						End:        i.End,
+					}
+					f.refreshCategoryTotals(key)
 				}(i, cb)
 			}
 		}
@@ -141,13 +156,12 @@ func (f *Firefly) RefreshCaches(c *categorybudget.CategoryBudgets, b *budget.Bud
 
 // invalidateCategoryCache will invalidate cache entries related to a particular
 // category. This should be called after creating a transaction.
-func (f *Firefly) invalidateCategoryCache(categoryID string) {
+func (f *Firefly) invalidateCategoryCache(tgt categoryTotalsKey) {
 	f.cache.mu.Lock()
 	defer f.cache.mu.Unlock()
 
-	thisYear := strconv.Itoa(time.Now().Year())
 	for k := range f.cache.CategoryTotals {
-		if strings.HasPrefix(k, thisYear) || strings.HasPrefix(k, categoryID) {
+		if k.Start.Year() == tgt.Start.Year() || k.End.Year() == tgt.End.Year() || k.CategoryID == tgt.CategoryID {
 			delete(f.cache.CategoryTotals, k)
 		}
 	}

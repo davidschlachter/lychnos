@@ -70,7 +70,7 @@ func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 	}
 
 	dateFormat := "2006-01-02T15:04:05-07:00"
-	_, err = time.Parse(dateFormat, t.Date)
+	txnDate, err := time.Parse(dateFormat, t.Date)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, "Could not parse date '%s'", t.Date)
@@ -133,7 +133,15 @@ func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 
 	respBody, _ := io.ReadAll(resp.Body)
 
-	f.invalidateCategoryCache(t.CategoryID)
+	// Invalidate any matching cache entries. Since the transaction was
+	// successfully create, these conversions should not raise errors
+	catID, _ := strconv.Atoi(t.CategoryID)
+	key := categoryTotalsKey{
+		CategoryID: catID,
+		Start:      txnDate,
+		End:        txnDate,
+	}
+	f.invalidateCategoryCache(key)
 
 	w.WriteHeader(http.StatusCreated)
 	fmt.Fprint(w, string(respBody))
