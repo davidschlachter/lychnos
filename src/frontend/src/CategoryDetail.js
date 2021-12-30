@@ -95,7 +95,7 @@ class CategoryDetail extends React.Component {
                             <TableBody>
                                 {details[0].totals.map(item => (
                                     <TableRow key={item.start}>
-                                        <TableCell>{Intl.DateTimeFormat('en', { month: 'long' }).format(new Date(item.start.substring(5, 7)))}</TableCell>
+                                        <TableCell>{Intl.DateTimeFormat('en', { month: 'long' }).format(new Date(item.start.replace("Z", "")))}</TableCell>
                                         <TableCell>{Math.round(parseFloat(item.earned) + parseFloat(item.spent))}</TableCell>
                                     </TableRow>
                                 ))}
