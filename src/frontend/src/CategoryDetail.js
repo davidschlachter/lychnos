@@ -1,6 +1,7 @@
 import React from 'react';
 import FillBar from './FillBar.js'
 import CategoryHeader from './CategoryHeader.js'
+import Spinner from './Spinner.js'
 import AmountLeft from './AmountLeft';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
@@ -61,7 +62,7 @@ class CategoryDetail extends React.Component {
         if (error) {
             return <div>Error: {error.message}</div>;
         } else if (!isLoaded) {
-            return <div>Loading...</div>;
+            return <Spinner />;
         } else {
             let timeSpent = 0
             if (budgets.length > 1) {

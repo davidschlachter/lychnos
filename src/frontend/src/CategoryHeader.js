@@ -18,8 +18,8 @@ export default function CategoryHeader(props) {
                         color="inherit"
                         aria-label="menu"
                         sx={{ mr: 2 }}
-                        element={Link}
                         to="/"
+                        component={Link}
                     >
                         <ArrowBackIosNewIcon />
                     </IconButton>
