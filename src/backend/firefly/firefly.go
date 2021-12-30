@@ -1,5 +1,4 @@
 // Package firefly makes requests to the Firefly-III API
-// Package firefly makes API requests to the Firefly API.
 package firefly
 
 import (
