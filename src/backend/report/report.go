@@ -54,8 +54,9 @@ func (r *Reports) Handle(w http.ResponseWriter, req *http.Request) {
 
 type CategorySummary struct {
 	firefly.Category
-	Amount decimal.Decimal `json:"amount"`
-	Sum    decimal.Decimal `json:"sum"`
+	CategoryBudgetID int             `json:"category_budget_id"`
+	Amount           decimal.Decimal `json:"amount"`
+	Sum              decimal.Decimal `json:"sum"`
 }
 
 func (r *Reports) listCategorySummaries(w http.ResponseWriter, req *http.Request) {
@@ -104,6 +105,7 @@ func (r *Reports) ListCategorySummaries(budgetID int) ([]CategorySummary, error)
 		}
 		var cs CategorySummary
 		cs.ID = c.Category
+		cs.CategoryBudgetID = c.ID
 		cs.Amount = c.Amount
 		results = append(results, cs)
 	}
@@ -125,7 +127,7 @@ func (r *Reports) ListCategorySummaries(budgetID int) ([]CategorySummary, error)
 
 type CategorySummaryDetail struct {
 	CategorySummary
-	Totals []firefly.CategoryTotal
+	Totals []firefly.CategoryTotal `json:"totals"`
 }
 
 func (r *Reports) fetchCategorySummaries(w http.ResponseWriter, req *http.Request) {
@@ -193,15 +195,12 @@ func (r *Reports) FetchCategorySummary(catBgtID int) ([]CategorySummaryDetail, e
 	var bgtMonth time.Month
 
 	// d is the first day in each summary reporting period
-	for d := budget[0].Start; d.Before(lastDayThisMonth) || d.Before(budget[0].End); d = time.Date(bgtYear, bgtMonth+1, 1, 0, 0, 0, 0, currentLocation) {
+	for d := budget[0].Start; d.Before(budget[0].End) && d.Before(lastDayThisMonth); d = time.Date(bgtYear, bgtMonth+1, 1, 0, 0, 0, 0, currentLocation) {
 		bgtYear, bgtMonth, _ = d.Date()
 		// l is the last day of each reporting period
 		l := time.Date(bgtYear, bgtMonth, daysInMonth(int(bgtMonth), bgtYear), 23, 59, 59, 0, currentLocation)
 		ct, err := r.f.FetchCategoryTotal(cs.ID, d, l)
 		if err != nil || len(ct) != 1 {
-			if err == firefly.ErrNoSpentEarned {
-				continue
-			}
 			return nil, fmt.Errorf("could not fetch category total: %s", err)
 		}
 		results[0].Totals = append(results[0].Totals, ct[0])

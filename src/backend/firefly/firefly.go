@@ -38,7 +38,7 @@ type rawCategory struct {
 }
 
 func (f *Firefly) Categories() ([]Category, error) {
-	const path = "/api/v1/autocomplete/categories"
+	const path = "/api/v1/autocomplete/categories?limit=1000"
 
 	req, _ := http.NewRequest("GET", f.url+path, nil)
 	req.Header.Add("Authorization", "Bearer "+f.token)
@@ -164,9 +164,6 @@ func (f *Firefly) FetchCategoryTotal(catID int, start, end time.Time) ([]Categor
 	var results []CategoryTotal
 
 	r := &rawResults.Data
-	if len(r.Attributes.Spent) == 0 && len(r.Attributes.Earned) == 0 {
-		return nil, ErrNoSpentEarned
-	}
 	var c CategoryTotal
 	var spent, earned decimal.Decimal
 	id, err := strconv.Atoi(r.ID)
