@@ -8,10 +8,14 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
 func (f *Firefly) HandleTxn(w http.ResponseWriter, req *http.Request) {
 	switch req.Method {
+	case "GET":
+		f.listTxns(w, req)
 	case "POST":
 		f.createTxn(w, req)
 	default:
@@ -19,20 +23,36 @@ func (f *Firefly) HandleTxn(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-type createRequest struct {
+type txnsResponse struct {
+	Data  []Transactions `json:"data"`
+	Meta  meta           `json:"meta"`
+	Links links          `json:"links"`
+}
+
+type Transactions struct {
+	ID         string                `json:"id"`
+	Attributes TransactionAttributes `json:"attributes"`
+}
+
+type TransactionAttributes struct {
+	GroupTitle   string        `json:"group_title"`
 	Transactions []Transaction `json:"transactions"`
 }
 
 type Transaction struct {
-	Type            string `json:"type"`
-	Date            string `json:"date"` // "2018-09-17T12:46:47+01:00"
-	Amount          string `json:"amount"`
-	Description     string `json:"description"`
-	CategoryID      string `json:"category_id,omitempty"`
-	SourceID        string `json:"source_id,omitempty"`
-	SourceName      string `json:"source_name,omitempty"`
-	DestinationID   string `json:"destination_id,omitempty"`
-	DestinationName string `json:"destination_name,omitempty"`
+	Type            string          `json:"type"`
+	Date            string          `json:"date"` // "2018-09-17T12:46:47+01:00"
+	Amount          decimal.Decimal `json:"amount"`
+	Description     string          `json:"description"`
+	CategoryID      string          `json:"category_id,omitempty"`
+	SourceID        string          `json:"source_id,omitempty"`
+	SourceName      string          `json:"source_name,omitempty"`
+	DestinationID   string          `json:"destination_id,omitempty"`
+	DestinationName string          `json:"destination_name,omitempty"`
+}
+
+type createRequest struct {
+	Transactions []Transaction `json:"transactions"`
 }
 
 func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
@@ -89,7 +109,7 @@ func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if t.Amount == "" {
+	if t.Amount.IsZero() {
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprint(w, "amount must be provided")
 		return
@@ -192,4 +212,49 @@ func (f *Firefly) calcTxnType(srcID, srcName, destID, destName string) string {
 	} else {
 		return ""
 	}
+}
+
+func (f *Firefly) listTxns(w http.ResponseWriter, req *http.Request) {
+	var page int
+	pageStr, ok := req.URL.Query()["page"]
+	if ok && len(pageStr) > 0 {
+		page, _ = strconv.Atoi(pageStr[0]) // if page cannot be parsed, we'll return page 1
+	}
+
+	txns, err := f.ListTransactions(page)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Could not list transactions: %s", err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(txns)
+}
+
+func (f *Firefly) ListTransactions(page int) ([]Transactions, error) {
+	const path = "/api/v1/transactions"
+
+	if page == 0 {
+		page = 1
+	}
+
+	params := fmt.Sprintf("?page=%d", page)
+	req, _ := http.NewRequest("GET", f.url+path+params, nil)
+	req.Header.Add("Authorization", "Bearer "+f.token)
+	resp, err := f.client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch Transactions: %s", err)
+	}
+	defer resp.Body.Close()
+
+	var txns txnsResponse
+	json.NewDecoder(resp.Body).Decode(&txns)
+
+	var results []Transactions
+	for _, t := range txns.Data {
+		results = append(results, t)
+	}
+
+	return results, nil
 }
