@@ -25,8 +25,12 @@ var expectedIntervals = [][2]string{
 }
 
 func TestHandle(t *testing.T) {
-	start := time.Date(2020, 1, 1, 0, 0, 0, 0, time.Now().Local().Location())
-	end := time.Date(2020, 12, 30, 23, 59, 59, 0, time.Now().Local().Location())
+	location, err := time.LoadLocation("America/Toronto")
+	if err != nil {
+		t.Fatalf("Failed to load location 'America/Toronto': %s", err)
+	}
+	start := time.Date(2020, 1, 1, 0, 0, 0, 0, location)
+	end := time.Date(2020, 12, 30, 23, 59, 59, 0, location)
 	intervals := interval.Get(start, end)
 
 	if len(intervals) != len(expectedIntervals) {
