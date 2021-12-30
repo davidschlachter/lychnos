@@ -1,3 +1,7 @@
 tr {
-    height: 2em;
-  }
+  height: 2em;
+}
+
+tbody a {
+  text-decoration: none;
+}

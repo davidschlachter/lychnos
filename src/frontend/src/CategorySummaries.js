@@ -9,6 +9,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
+import { Link } from 'react-router-dom';
 
 class CategorySummaries extends React.Component {
     constructor(props) {
@@ -75,16 +76,21 @@ class CategorySummaries extends React.Component {
                         <TableHead>
                             <TableRow>
                                 <TableCell>Category</TableCell>
-                                <TableCell>Spent/Earned this year</TableCell>
+                                <TableCell>Progress</TableCell>
                                 <TableCell>Left&nbsp;per month</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
                             {summaries.map(item => (
-                                <TableRow key={item.id}>
+                                <TableRow key={item.category_budget_id} to={"/categorydetail/" + item.category_budget_id} component={Link}>
                                     <TableCell>{item.name}</TableCell>
                                     <TableCell width="99%"><FillBar amount={item.amount} sum={item.sum} now={timeSpent}></FillBar></TableCell>
-                                    <AmountLeft amount={item.amount} sum={item.sum} timeSpent={timeSpent}></AmountLeft>
+                                    <TableCell style={{
+                                        'fontFamily': "monospace",
+                                        'textAlign': "right",
+                                        'fontSize': "110%",
+                                        'fontWeight': "600"
+                                    }}><AmountLeft amount={item.amount} sum={item.sum} timeSpent={timeSpent}></AmountLeft></TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>

@@ -8,15 +8,11 @@ function AmountLeft(props) {
         if (Math.abs(left) > 10) { color = 'red' }
         sign = -1
     }
-    let style = {
-        'color': color,
-        'fontFamily': "monospace",
-        'textAlign': "right",
-        'fontSize': "110%",
-        'fontWeight': "600"
-    }
+
     return (
-        <TableCell style={style}>{sign * Math.abs(left)}</TableCell>
+        <span style={{
+            "color": color
+        }}>{sign * Math.abs(left)}</span>
     );
 }
 
