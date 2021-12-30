@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/davidschlachter/lychnos/src/backend/budget"
+	"github.com/davidschlachter/lychnos/src/backend/cache"
 	"github.com/davidschlachter/lychnos/src/backend/categorybudget"
 	"github.com/davidschlachter/lychnos/src/backend/firefly"
 	"github.com/davidschlachter/lychnos/src/backend/report"
@@ -29,7 +30,9 @@ func main() {
 	c := categorybudget.New(db)
 	http.HandleFunc("/api/categorybudgets/", c.Handle)
 
-	r, err := report.New(f, c, b)
+	h := cache.New(f)
+
+	r, err := report.New(f, c, b, h)
 	if err != nil {
 		fmt.Printf("Could not initialize reports: %s\n", err)
 		os.Exit(1)
@@ -40,5 +43,8 @@ func main() {
 		fmt.Fprintf(w, "ok\n")
 	})
 
+	h.RefreshCaches(c, b)
+
+	log.Println("Listening for connections...")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
