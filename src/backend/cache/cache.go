@@ -108,9 +108,6 @@ func (h *Cache) refreshCategoryTotalsFetch(catID int, start, end time.Time, key 
 }
 
 func (h *Cache) RefreshCaches(c *categorybudget.CategoryBudgets, b *budget.Budgets) error {
-	h.mu.Lock()
-	defer h.mu.Unlock()
-
 	bs, err := b.List()
 	if err != nil {
 		return fmt.Errorf("failed to list budgets: %s", err)
@@ -121,15 +118,23 @@ func (h *Cache) RefreshCaches(c *categorybudget.CategoryBudgets, b *budget.Budge
 	}
 
 	for _, bgt := range bs {
-		_ = h.refreshCategoryTotalsList(bgt.Start, bgt.End, fmt.Sprintf("%s%s", bgt.Start, bgt.End))
+		go func(bgt budget.Budget) {
+			h.mu.Lock()
+			defer h.mu.Unlock()
+			_ = h.refreshCategoryTotalsList(bgt.Start, bgt.End, fmt.Sprintf("%s%s", bgt.Start, bgt.End))
+		}(bgt)
 		for _, cb := range cbs {
 			if cb.Budget != bgt.ID {
 				continue
 			}
 			intervals := interval.Get(bgt.Start, bgt.End, time.Now().UTC().Location())
 			for _, i := range intervals {
-				key := fmt.Sprintf("%d%s%s", cb.Category, i.Start, i.End)
-				h.refreshCategoryTotalsFetch(cb.Category, i.Start, i.End, key)
+				go func(i interval.ReportingInterval, cb categorybudget.CategoryBudget) {
+					h.mu.Lock()
+					defer h.mu.Unlock()
+					key := fmt.Sprintf("%d%s%s", cb.Category, i.Start, i.End)
+					h.refreshCategoryTotalsFetch(cb.Category, i.Start, i.End, key)
+				}(i, cb)
 			}
 		}
 	}
