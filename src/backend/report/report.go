@@ -7,11 +7,12 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/davidschlachter/lychnos/src/backend/budget"
+	"github.com/davidschlachter/lychnos/src/backend/cache"
 	"github.com/davidschlachter/lychnos/src/backend/categorybudget"
 	"github.com/davidschlachter/lychnos/src/backend/firefly"
+	"github.com/davidschlachter/lychnos/src/backend/interval"
 	"github.com/shopspring/decimal"
 )
 
@@ -19,9 +20,10 @@ type Reports struct {
 	f *firefly.Firefly
 	c *categorybudget.CategoryBudgets
 	b *budget.Budgets
+	h *cache.Cache
 }
 
-func New(f *firefly.Firefly, c *categorybudget.CategoryBudgets, b *budget.Budgets) (*Reports, error) {
+func New(f *firefly.Firefly, c *categorybudget.CategoryBudgets, b *budget.Budgets, h *cache.Cache) (*Reports, error) {
 	if f == nil || c == nil || b == nil {
 		return nil, fmt.Errorf("must provide valid clients")
 	}
@@ -29,6 +31,7 @@ func New(f *firefly.Firefly, c *categorybudget.CategoryBudgets, b *budget.Budget
 		f: f,
 		c: c,
 		b: b,
+		h: h,
 	}, nil
 }
 
@@ -92,7 +95,7 @@ func (r *Reports) ListCategorySummaries(budgetID int) ([]CategorySummary, error)
 	if err != nil {
 		return nil, fmt.Errorf("could not list categorybudgets: %s", err)
 	}
-	categories, err := r.f.ListCategoryTotals(budget[0].Start, budget[0].End)
+	categories, err := r.h.CachedListCategoryTotals(budget[0].Start, budget[0].End)
 	if err != nil {
 		return nil, fmt.Errorf("could not list Categories: %s", err)
 	}
@@ -155,7 +158,7 @@ func (r *Reports) FetchCategorySummary(catBgtID int) ([]CategorySummaryDetail, e
 	if err != nil || len(catBgt) != 1 {
 		return nil, fmt.Errorf("could not fetch categorybudgets: %s", err)
 	}
-	categories, err := r.f.Categories()
+	categories, err := r.h.CachedCategories()
 	if err != nil {
 		return nil, fmt.Errorf("could not list Categories: %s", err)
 	}
@@ -186,20 +189,10 @@ func (r *Reports) FetchCategorySummary(catBgtID int) ([]CategorySummaryDetail, e
 		return nil, fmt.Errorf("unknown reporting interval %d, only monthly is supported", budget[0].ReportingInterval)
 	}
 
-	now := time.Now()
-	currentYear, currentMonth, _ := now.Date()
-	currentLocation := now.Location()
-	lastDayThisMonth := time.Date(currentYear, currentMonth, daysInMonth(int(currentMonth), currentYear), 23, 59, 59, 0, currentLocation)
+	intervals := interval.Get(budget[0].Start, budget[0].End)
 
-	var bgtYear int
-	var bgtMonth time.Month
-
-	// d is the first day in each summary reporting period
-	for d := budget[0].Start; d.Before(budget[0].End) && d.Before(lastDayThisMonth); d = time.Date(bgtYear, bgtMonth+1, 1, 0, 0, 0, 0, currentLocation) {
-		bgtYear, bgtMonth, _ = d.Date()
-		// l is the last day of each reporting period
-		l := time.Date(bgtYear, bgtMonth, daysInMonth(int(bgtMonth), bgtYear), 23, 59, 59, 0, currentLocation)
-		ct, err := r.f.FetchCategoryTotal(cs.ID, d, l)
+	for _, i := range intervals {
+		ct, err := r.h.CachedFetchCategoryTotals(cs.ID, i.Start, i.End)
 		if err != nil || len(ct) != 1 {
 			return nil, fmt.Errorf("could not fetch category total: %s", err)
 		}
@@ -213,19 +206,4 @@ func (r *Reports) FetchCategorySummary(catBgtID int) ([]CategorySummaryDetail, e
 	results[0].Sum = sum
 
 	return results, nil
-}
-
-// via https://stackoverflow.com/a/35182930
-func daysInMonth(month, year int) int {
-	switch time.Month(month) {
-	case time.April, time.June, time.September, time.November:
-		return 30
-	case time.February:
-		if year%4 == 0 && (year%100 != 0 || year%400 == 0) { // leap year
-			return 29
-		}
-		return 28
-	default:
-		return 31
-	}
 }
