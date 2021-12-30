@@ -126,7 +126,7 @@ func (h *Cache) RefreshCaches(c *categorybudget.CategoryBudgets, b *budget.Budge
 			if cb.Budget != bgt.ID {
 				continue
 			}
-			intervals := interval.Get(bgt.Start, bgt.End)
+			intervals := interval.Get(bgt.Start, bgt.End, time.Now().UTC().Location())
 			for _, i := range intervals {
 				key := fmt.Sprintf("%d%s%s", cb.Category, i.Start, i.End)
 				h.refreshCategoryTotalsFetch(cb.Category, i.Start, i.End, key)

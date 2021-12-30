@@ -31,7 +31,7 @@ func TestHandle(t *testing.T) {
 	}
 	start := time.Date(2020, 1, 1, 0, 0, 0, 0, location)
 	end := time.Date(2020, 12, 30, 23, 59, 59, 0, location)
-	intervals := interval.Get(start, end)
+	intervals := interval.Get(start, end, location)
 
 	if len(intervals) != len(expectedIntervals) {
 		t.Fatalf("len(intervals) = %d, wanted %d\n", len(intervals), len(expectedIntervals))

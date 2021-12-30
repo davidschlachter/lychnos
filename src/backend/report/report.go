@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/davidschlachter/lychnos/src/backend/budget"
 	"github.com/davidschlachter/lychnos/src/backend/cache"
@@ -189,7 +190,7 @@ func (r *Reports) FetchCategorySummary(catBgtID int) ([]CategorySummaryDetail, e
 		return nil, fmt.Errorf("unknown reporting interval %d, only monthly is supported", budget[0].ReportingInterval)
 	}
 
-	intervals := interval.Get(budget[0].Start, budget[0].End)
+	intervals := interval.Get(budget[0].Start, budget[0].End, time.Now().UTC().Location())
 
 	for _, i := range intervals {
 		ct, err := r.h.CachedFetchCategoryTotals(cs.ID, i.Start, i.End)
