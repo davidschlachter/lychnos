@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -116,7 +115,8 @@ func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	dateFormat := "2006-01-02T15:04:05-07:00"
+	dateFormat := "2006-01-02"
+	// firefly internal dateFormat := "2006-01-02T15:04:05-07:00"
 	txnDate, err := time.Parse(dateFormat, t.Date)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -154,7 +154,7 @@ func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 	t.Type = f.calcTxnType(t.SourceID, t.SourceName, t.DestinationID, t.DestinationName)
 	if t.Type == "" {
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Could not determine transaction type")
+		fmt.Fprintf(w, "Could not determine transaction type with provided account information: %s, %s; %s, %s\n", t.SourceID, t.SourceName, t.DestinationID, t.DestinationName)
 		return
 	}
 
@@ -188,10 +188,19 @@ func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	respBody, _ := io.ReadAll(resp.Body)
+	// Check for successful response
+	var result struct {
+		Data Transactions `json:"data"`
+	}
+	json.NewDecoder(resp.Body).Decode(&result)
+	if result.Data.ID == "" {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, "Failed to create transaction.")
+		return
+	}
 
 	// Invalidate any matching cache entries. Since the transaction was
-	// successfully create, these conversions should not raise errors
+	// successfully created, the conversions should not raise errors
 	catID, _ := strconv.Atoi(t.CategoryID)
 	key := categoryTotalsKey{
 		CategoryID: catID,
@@ -202,8 +211,8 @@ func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 	f.invalidateAccountsCache()
 	f.invalidateTransactionsCache()
 
-	w.WriteHeader(http.StatusCreated)
-	fmt.Fprint(w, string(respBody))
+	// Successful txn creation should redirect the client to the transactions page
+	http.Redirect(w, r, "/app/txns", http.StatusFound)
 }
 
 // resolveAccount will determine the ID of an account, provided a name; or the
@@ -236,7 +245,7 @@ func (f *Firefly) resolveAccount(id, name string) (string, string) {
 		}
 	}
 
-	return "", ""
+	return id, name
 }
 
 const (
@@ -249,6 +258,9 @@ const (
 // transfer. If source is an asset account and dest is not: withdrawal. If dest
 // is an asset account but source is not: deposit. If both accounts are of the
 // same type: transfer.
+//
+// TODO(davidschlachter): this may be confused if we have two accounts with the
+// same name but different types, e.g. expense and revenue
 func (f *Firefly) calcTxnType(srcID, srcName, destID, destName string) string {
 	var srcType, destType string
 	accts, _ := f.CachedAccounts()
@@ -264,7 +276,6 @@ func (f *Firefly) calcTxnType(srcID, srcName, destID, destName string) string {
 			break
 		}
 	}
-	// New accounts are expense accounts
 	// TODO(davidschlachter): maybe support cash accounts one day
 	if srcType == "" && srcName != "" && destType == AcctTypeAsset {
 		srcType = AcctTypeRevenue
