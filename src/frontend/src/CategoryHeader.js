@@ -23,7 +23,7 @@ export default function CategoryHeader(props) {
                     >
                         <ArrowBackIosNewIcon />
                     </IconButton>
-                    <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                    <Typography variant="h6" component="div" align="center" sx={{ flexGrow: 1 }}>
                         {props.category_name}
                     </Typography>
                 </Toolbar>
