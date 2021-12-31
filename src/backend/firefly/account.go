@@ -43,11 +43,26 @@ func (f *Firefly) HandleAccount(w http.ResponseWriter, req *http.Request) {
 }
 
 func (f *Firefly) listAccounts(w http.ResponseWriter, req *http.Request) {
-	accounts, err := f.ListAccounts("")
+	accounts, err := f.CachedAccounts()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "Could not list accounts: %s", err)
 		return
+	}
+
+	// If a type parameter was provided, filter the returned accounts
+	acctTypes, ok := req.URL.Query()["type"]
+	if ok && len(acctTypes) > 0 {
+		var filtered_accounts []Account
+		for _, t := range acctTypes {
+			for _, a := range accounts {
+				if a.Attributes.Type != t {
+					continue
+				}
+				filtered_accounts = append(filtered_accounts, a)
+			}
+		}
+		accounts = filtered_accounts
 	}
 
 	w.Header().Set("Content-Type", "application/json")
