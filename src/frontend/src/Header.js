@@ -7,7 +7,7 @@ import IconButton from '@mui/material/IconButton';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import { Link } from 'react-router-dom';
 
-export default function CategoryHeader(props) {
+export default function Header(props) {
     return (
         <Box sx={{ flexGrow: 1 }}>
             <AppBar position="static">
@@ -18,13 +18,13 @@ export default function CategoryHeader(props) {
                         color="inherit"
                         aria-label="menu"
                         sx={{ mr: 2 }}
-                        to="/"
+                        to={props.back_location}
                         component={Link}
                     >
                         <ArrowBackIosNewIcon />
                     </IconButton>
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                        {props.category_name}
+                        {props.title}
                     </Typography>
                 </Toolbar>
             </AppBar>

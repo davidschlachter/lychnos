@@ -45,7 +45,7 @@ export default function TransactionList() {
                 </TableHead>
                 <TableBody>
                     {response.map(item => (
-                        <TableRow key={item.id} to={"/txndetail/" + item.id} component={Link}>
+                        <TableRow key={item.id} to={"/txn/" + item.id} component={Link}>
                             <TableCell>{item.attributes.transactions[0].description}</TableCell>
                             <TableCell>{parseFloat(item.attributes.transactions[0].amount).toLocaleString(undefined, { maximumFractionDigits: 2, minimumFractionDigits: 2 })}</TableCell>
                             <TableCell><AccountIcon account_id={item.attributes.transactions[0].source_id} /> <span className="srcName">{item.attributes.transactions[0].source_name}</span></TableCell>

@@ -1,6 +1,7 @@
 import CategorySummaries from './CategorySummaries';
 import CategoryDetail from './CategoryDetail';
 import TransactionList from './TransactionList';
+import TransactionDetail from './TransactionDetail';
 import NavBar from './NavBar';
 import {
   BrowserRouter as Router,
@@ -19,6 +20,7 @@ function App() {
           <Route path="/txns" element={<TransactionList />} />
           <Route path="/" element={<CategorySummaries />} />
           <Route path="/categorydetail/:categoryId" element={<CategoryDetailHelper />} />
+          <Route path="/txn/:txnID" element={<TransactionDetail />} />
         </Routes>
         <NavBar />
       </Router>

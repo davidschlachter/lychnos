@@ -24,7 +24,7 @@ export default function AccountIcon(props) {
     if (props.account_id in icons) {
         icon = icons[props.account_id];
     }
-    let iconPath = "account_icons/" + icon;
+    let iconPath = "/app/account_icons/" + icon;
     return (
         <img style={{ "height": "32px" }} src={iconPath} alt="account icon" />
     );

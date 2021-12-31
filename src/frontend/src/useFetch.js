@@ -5,9 +5,14 @@ const queryString = (params) =>
         .map((key) => `${key}=${params[key]}`)
         .join("&");
 
-const createUrl = (url, queryOptions) => {
-    return url + "?" + queryString(queryOptions);
-};
+function createUrl(url, queryOptions) {
+    if (Object.keys(queryOptions).length > 0) {
+        return url + "?" + queryString(queryOptions);
+    } else {
+        return url;
+    }
+
+}
 
 export default (url, options = { body: {}, query: {} }) => {
     const [data, setData] = useState({

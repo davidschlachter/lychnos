@@ -1,10 +1,11 @@
 import React from 'react';
 import FillBar from './FillBar.js'
-import CategoryHeader from './CategoryHeader.js'
+import Header from './Header.js'
 import Spinner from './Spinner.js'
 import AmountLeft from './AmountLeft';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
+import Box from '@mui/material/Box';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -77,32 +78,35 @@ class CategoryDetail extends React.Component {
             ));
             return (
                 <Paper>
-                    <CategoryHeader category_name={details[0].name}></CategoryHeader>
-                    <Typography variant="h6" component="div" align="center" gutterBottom>
-                        Budgeted: {details[0].amount}, Actual: {totalSpent}<br />
-                        Left per month: <AmountLeft amount={details[0].amount} sum={totalSpent} timeSpent={timeSpent} />
-                    </Typography>
-                    <div style={{ "width": "100%;" }}>
-                        <FillBar amount={details[0].amount} sum={details[0].sum} now={timeSpent}></FillBar>
-                    </div>
-                    <TableContainer component={Paper}>
-                        <Table style={{ "width": "100%", "margin-bottom": "3.5em" }}>
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell>Month</TableCell>
-                                    <TableCell>Sum</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {details[0].totals.map(item => (
-                                    <TableRow key={item.start}>
-                                        <TableCell>{Intl.DateTimeFormat('en', { month: 'long' }).format(new Date(item.start.replace("Z", "")))}</TableCell>
-                                        <TableCell>{Math.round(parseFloat(item.earned) + parseFloat(item.spent))}</TableCell>
+                    <Header back_location="/" title={details[0].name}></Header>
+                    <Box sx={{ p: 2 }}>
+                        <Typography variant="h6" component="div" align="center" gutterBottom>
+                            Budgeted: {details[0].amount}, Actual: {totalSpent}<br />
+                            Left per month: <AmountLeft amount={details[0].amount} sum={totalSpent} timeSpent={timeSpent} />
+                        </Typography>
+                        <div style={{ "width": "100%;" }}>
+                            <FillBar amount={details[0].amount} sum={details[0].sum} now={timeSpent}></FillBar>
+                        </div>
+                        <br />
+                        <TableContainer component={Paper}>
+                            <Table style={{ "width": "100%", "margin-bottom": "3.5em" }}>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>Month</TableCell>
+                                        <TableCell>Sum</TableCell>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
+                                </TableHead>
+                                <TableBody>
+                                    {details[0].totals.map(item => (
+                                        <TableRow key={item.start}>
+                                            <TableCell>{Intl.DateTimeFormat('en', { month: 'long' }).format(new Date(item.start.replace("Z", "")))}</TableCell>
+                                            <TableCell>{Math.round(parseFloat(item.earned) + parseFloat(item.spent))}</TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </Box>
                 </Paper>
             );
         }
