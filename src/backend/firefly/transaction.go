@@ -77,17 +77,24 @@ func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 	//
 	// Validate the request
 	//
-	cats, _ := f.Categories()
+	// Verify that a provided category ID is valid. If only a category name is
+	// provided, add the ID.
+	cats, _ := f.CachedCategories()
 	var ok bool
 	for _, c := range cats {
 		if strconv.Itoa(c.ID) == t.CategoryID {
 			ok = true
 			break
 		}
+		if c.Name == t.CategoryName {
+			t.CategoryID = strconv.Itoa(c.ID)
+			ok = true
+			break
+		}
 	}
 	if !ok {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Could not find Category with ID = '%s'", t.CategoryID)
+		fmt.Fprintf(w, "Could not find Category with ID = '%s' or Name = '%s'", t.CategoryID, t.CategoryName)
 		return
 	}
 
