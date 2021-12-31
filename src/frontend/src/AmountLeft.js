@@ -1,5 +1,3 @@
-import TableCell from '@mui/material/TableCell';
-
 function AmountLeft(props) {
     let left = Math.round((props.amount - props.sum) / Math.ceil((1 - props.timeSpent / 100) * 12))
     let color = 'black'

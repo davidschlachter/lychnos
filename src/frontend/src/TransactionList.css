@@ -1,0 +1,17 @@
+@media only screen and (max-width: 800px) {
+    .srcName {
+        display: none;
+    }
+
+    td:nth-child(5) {
+        display: none;
+    }
+
+    th:nth-child(5) {
+        display: none;
+    }
+}
+
+td>* {
+    vertical-align: middle;
+}

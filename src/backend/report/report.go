@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/davidschlachter/lychnos/src/backend/budget"
-	"github.com/davidschlachter/lychnos/src/backend/cache"
 	"github.com/davidschlachter/lychnos/src/backend/categorybudget"
 	"github.com/davidschlachter/lychnos/src/backend/firefly"
 	"github.com/davidschlachter/lychnos/src/backend/interval"
@@ -21,10 +20,9 @@ type Reports struct {
 	f *firefly.Firefly
 	c *categorybudget.CategoryBudgets
 	b *budget.Budgets
-	h *cache.Cache
 }
 
-func New(f *firefly.Firefly, c *categorybudget.CategoryBudgets, b *budget.Budgets, h *cache.Cache) (*Reports, error) {
+func New(f *firefly.Firefly, c *categorybudget.CategoryBudgets, b *budget.Budgets) (*Reports, error) {
 	if f == nil || c == nil || b == nil {
 		return nil, fmt.Errorf("must provide valid clients")
 	}
@@ -32,7 +30,6 @@ func New(f *firefly.Firefly, c *categorybudget.CategoryBudgets, b *budget.Budget
 		f: f,
 		c: c,
 		b: b,
-		h: h,
 	}, nil
 }
 
@@ -96,7 +93,7 @@ func (r *Reports) ListCategorySummaries(budgetID int) ([]CategorySummary, error)
 	if err != nil {
 		return nil, fmt.Errorf("could not list categorybudgets: %s", err)
 	}
-	categories, err := r.h.CachedListCategoryTotals(budget[0].Start, budget[0].End)
+	categories, err := r.f.CachedListCategoryTotals(budget[0].Start, budget[0].End)
 	if err != nil {
 		return nil, fmt.Errorf("could not list Categories: %s", err)
 	}
@@ -159,7 +156,7 @@ func (r *Reports) FetchCategorySummary(catBgtID int) ([]CategorySummaryDetail, e
 	if err != nil || len(catBgt) != 1 {
 		return nil, fmt.Errorf("could not fetch categorybudgets: %s", err)
 	}
-	categories, err := r.h.CachedCategories()
+	categories, err := r.f.CachedCategories()
 	if err != nil {
 		return nil, fmt.Errorf("could not list Categories: %s", err)
 	}
@@ -193,7 +190,7 @@ func (r *Reports) FetchCategorySummary(catBgtID int) ([]CategorySummaryDetail, e
 	intervals := interval.Get(budget[0].Start, budget[0].End, time.Now().UTC().Location())
 
 	for _, i := range intervals {
-		ct, err := r.h.CachedFetchCategoryTotals(cs.ID, i.Start, i.End)
+		ct, err := r.f.CachedFetchCategoryTotals(cs.ID, i.Start, i.End)
 		if err != nil || len(ct) != 1 {
 			return nil, fmt.Errorf("could not fetch category total: %s", err)
 		}
