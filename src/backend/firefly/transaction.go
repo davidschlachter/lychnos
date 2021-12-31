@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/shopspring/decimal"
@@ -15,7 +17,12 @@ import (
 func (f *Firefly) HandleTxn(w http.ResponseWriter, req *http.Request) {
 	switch req.Method {
 	case "GET":
-		f.listTxns(w, req)
+		hasID := regexp.MustCompile(`/[0-9]+$`)
+		if hasID.MatchString(req.URL.Path) {
+			f.fetchTxn(w, req)
+		} else {
+			f.listTxns(w, req)
+		}
 	case "POST":
 		f.createTxn(w, req)
 	default:
@@ -258,4 +265,46 @@ func (f *Firefly) ListTransactions(page int) ([]Transactions, error) {
 	}
 
 	return results, nil
+}
+
+func (f *Firefly) fetchTxn(w http.ResponseWriter, req *http.Request) {
+	id := req.URL.Path[strings.LastIndex(req.URL.Path, "/")+1:]
+	if _, err := strconv.Atoi(id); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Could not parse transaction ID: %s\n", id)
+		return
+	}
+
+	txn, err := f.FetchTransaction(id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Could not fetch transaction: %s", err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(txn)
+}
+
+func (f *Firefly) FetchTransaction(id string) (*Transactions, error) {
+	const path = "/api/v1/transactions/"
+
+	req, _ := http.NewRequest("GET", f.url+path+id, nil)
+	req.Header.Add("Authorization", "Bearer "+f.token)
+	resp, err := f.client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch Transaction: %s", err)
+	}
+	defer resp.Body.Close()
+
+	var result struct {
+		Data Transactions `json:"data"`
+	}
+	json.NewDecoder(resp.Body).Decode(&result)
+
+	if result.Data.ID == "" {
+		return nil, fmt.Errorf("no transaction found")
+	}
+
+	return &result.Data, nil
 }
