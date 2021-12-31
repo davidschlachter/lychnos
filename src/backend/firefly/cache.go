@@ -219,7 +219,9 @@ func (f *Firefly) invalidateCategoryCache(tgt categoryTotalsKey) {
 	defer f.cache.mu.Unlock()
 
 	for k := range f.cache.CategoryTotals {
-		if k.Start.Year() == tgt.Start.Year() || k.End.Year() == tgt.End.Year() || k.CategoryID == tgt.CategoryID {
+		if (k.Start.Year() == tgt.Start.Year() && (k.CategoryID == 0 || k.CategoryID == tgt.CategoryID)) ||
+			(k.End.Year() == tgt.End.Year() && (k.CategoryID == 0 || k.CategoryID == tgt.CategoryID)) {
+			log.Printf("Clearing CategoryTotals cache for: %d, %s, %s", k.CategoryID, k.Start, k.End)
 			delete(f.cache.CategoryTotals, k)
 		}
 	}

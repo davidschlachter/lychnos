@@ -64,38 +64,56 @@ type createRequest struct {
 }
 
 func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
-	// Decode the request
-	decoder := json.NewDecoder(req.Body)
-	var t Transaction
-	err := decoder.Decode(&t)
+	err := req.ParseForm()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Could not parse POST body: %s", err)
+		fmt.Fprintf(w, "Could not parse POST data\n")
 		return
+	}
+
+	// Build the transaction struct
+	amt, err := decimal.NewFromString(req.Form.Get("amount"))
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Could not parse amount: %s\n", req.Form.Get("amount"))
+		return
+	}
+	t := Transaction{
+		Date:            req.Form.Get("date"),
+		Amount:          amt,
+		Description:     req.Form.Get("description"),
+		CategoryID:      req.Form.Get("category_id"),
+		CategoryName:    req.Form.Get("category_name"),
+		SourceID:        req.Form.Get("source_id"),
+		SourceName:      req.Form.Get("source_name"),
+		DestinationID:   req.Form.Get("destination_id"),
+		DestinationName: req.Form.Get("destination_name"),
 	}
 
 	//
 	// Validate the request
 	//
 	// Verify that a provided category ID is valid. If only a category name is
-	// provided, add the ID.
-	cats, _ := f.CachedCategories()
-	var ok bool
-	for _, c := range cats {
-		if strconv.Itoa(c.ID) == t.CategoryID {
-			ok = true
-			break
+	// provided, add the ID. Allow an empty category (e.g. for a transfer).
+	if t.CategoryID != "" || t.CategoryName != "" {
+		cats, _ := f.CachedCategories()
+		var ok bool
+		for _, c := range cats {
+			if strconv.Itoa(c.ID) == t.CategoryID {
+				ok = true
+				break
+			}
+			if c.Name == t.CategoryName {
+				t.CategoryID = strconv.Itoa(c.ID)
+				ok = true
+				break
+			}
 		}
-		if c.Name == t.CategoryName {
-			t.CategoryID = strconv.Itoa(c.ID)
-			ok = true
-			break
+		if !ok {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Could not find Category with ID = '%s' or Name = '%s'", t.CategoryID, t.CategoryName)
+			return
 		}
-	}
-	if !ok {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Could not find Category with ID = '%s' or Name = '%s'", t.CategoryID, t.CategoryName)
-		return
 	}
 
 	dateFormat := "2006-01-02T15:04:05-07:00"
@@ -130,6 +148,9 @@ func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// Determine the transaction type
+	t.SourceID, t.SourceName = f.resolveAccount(t.SourceID, t.SourceName)
+	t.DestinationID, t.DestinationName = f.resolveAccount(t.DestinationID, t.DestinationName)
 	t.Type = f.calcTxnType(t.SourceID, t.SourceName, t.DestinationID, t.DestinationName)
 	if t.Type == "" {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -183,6 +204,39 @@ func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 	fmt.Fprint(w, string(respBody))
+}
+
+// resolveAccount will determine the ID of an account, provided a name; or the
+// name, provided an ID.
+func (f *Firefly) resolveAccount(id, name string) (string, string) {
+	// Both name and ID missing or provided
+	if (id == "" && name == "") || (id != "" && name != "") {
+		return id, name
+	}
+
+	accts, _ := f.CachedAccounts()
+
+	// Name provided, ID missing
+	if id == "" && name != "" {
+		for _, a := range accts {
+			if a.Attributes.Name != name {
+				continue
+			}
+			return a.ID, name
+		}
+	}
+
+	// ID provided, name missing
+	if id != "" && name == "" {
+		for _, a := range accts {
+			if a.ID != id {
+				continue
+			}
+			return id, a.Attributes.Name
+		}
+	}
+
+	return "", ""
 }
 
 const (
