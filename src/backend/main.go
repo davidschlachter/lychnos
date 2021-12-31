@@ -24,6 +24,7 @@ func main() {
 	}
 	http.HandleFunc("/api/transactions/", f.HandleTxn)
 	http.HandleFunc("/api/accounts/", f.HandleAccount)
+	http.HandleFunc("/api/categories/", f.HandleCategory)
 
 	b := budget.New(db)
 	http.HandleFunc("/api/budgets/", b.Handle)

@@ -20,6 +20,28 @@ type rawCategory struct {
 	Name string `json:"name"`
 }
 
+func (f *Firefly) HandleCategory(w http.ResponseWriter, req *http.Request) {
+	switch req.Method {
+	case "GET":
+		f.listCategories(w, req)
+	default:
+		w.WriteHeader(http.StatusNotImplemented)
+		fmt.Fprintf(w, "Unsupported method %s", req.Method)
+	}
+}
+
+func (f *Firefly) listCategories(w http.ResponseWriter, req *http.Request) {
+	categories, err := f.CachedCategories()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "Could not list categories: %s", err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(categories)
+}
+
 func (f *Firefly) Categories() ([]Category, error) {
 	const path = "/api/v1/autocomplete/categories?limit=1000"
 
