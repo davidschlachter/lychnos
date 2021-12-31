@@ -27,7 +27,7 @@ export default function TransactionDetail() {
 
     return (
         <Paper>
-            <Header back_location="/txns" title=""></Header>
+            <Header back_location="/txns" title="Transaction details"></Header>
             <Box sx={{ p: 2 }}>
                 <Typography variant="h6" component="div" align="center" gutterBottom>
                     {response.attributes.transactions[0].description}

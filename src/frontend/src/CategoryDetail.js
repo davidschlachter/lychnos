@@ -78,9 +78,12 @@ class CategoryDetail extends React.Component {
             ));
             return (
                 <Paper>
-                    <Header back_location="/" title={details[0].name}></Header>
+                    <Header back_location="/" title="Category details"></Header>
                     <Box sx={{ p: 2 }}>
                         <Typography variant="h6" component="div" align="center" gutterBottom>
+                            {details[0].name}
+                        </Typography>
+                        <Typography variant="subtitle1" component="div" align="center" gutterBottom>
                             Budgeted: {details[0].amount}, Actual: {totalSpent}<br />
                             Left per month: <AmountLeft amount={details[0].amount} sum={totalSpent} timeSpent={timeSpent} />
                         </Typography>
