@@ -1,11 +1,10 @@
 import React from 'react';
-import Header from './Header.js';
 import FriendlyDate from './FriendlyDate.js';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import Paper from '@mui/material/Paper';
-import useFetch from "./useFetch";
+import Header from './Header.js';
 import Spinner from "./Spinner.js";
+import useFetch from "./useFetch";
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import { useParams } from "react-router-dom";
 
 export default function TransactionDetail() {
@@ -30,9 +29,9 @@ export default function TransactionDetail() {
     }
 
     return (
-        <Paper>
+        <>
             <Header back_location="/txns" title="Transaction details"></Header>
-            <Box sx={{ p: 2 }}>
+            <Box sx={{ p: 2, mb: 6 }}>
                 <Typography variant="h6" component="div" align="center" gutterBottom>
                     {response.attributes.transactions[0].description}
                 </Typography>
@@ -44,7 +43,7 @@ export default function TransactionDetail() {
                     Category: {response.attributes.transactions[0].category_name}
                 </Typography>
             </Box>
-        </Paper>
+        </>
     );
 }
 
