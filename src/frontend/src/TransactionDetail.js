@@ -38,10 +38,11 @@ export default function TransactionDetail() {
                     {response.attributes.transactions[0].description}
                 </Typography>
                 <Typography variant="subtitle1" component="div" align="left" gutterBottom>
-                    Amount: ${parseFloat(response.attributes.transactions[0].amount).toLocaleString(undefined, { maximumFractionDigits: 2, minimumFractionDigits: 2 })} <br />
                     From: {response.attributes.transactions[0].source_name} <br />
                     To: {response.attributes.transactions[0].destination_name} <br />
-                    Date: <FriendlyDate date={response.attributes.transactions[0].date} />
+                    Date: <FriendlyDate date={response.attributes.transactions[0].date} /> <br />
+                    Amount: ${parseFloat(response.attributes.transactions[0].amount).toLocaleString(undefined, { maximumFractionDigits: 2, minimumFractionDigits: 2 })} <br />
+                    Category: {response.attributes.transactions[0].category_name}
                 </Typography>
             </Box>
         </Paper>

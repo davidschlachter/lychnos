@@ -52,6 +52,7 @@ type Transaction struct {
 	Amount          decimal.Decimal `json:"amount"`
 	Description     string          `json:"description"`
 	CategoryID      string          `json:"category_id,omitempty"`
+	CategoryName    string          `json:"category_name"`
 	SourceID        string          `json:"source_id,omitempty"`
 	SourceName      string          `json:"source_name,omitempty"`
 	DestinationID   string          `json:"destination_id,omitempty"`
