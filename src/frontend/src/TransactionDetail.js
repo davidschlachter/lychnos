@@ -19,7 +19,12 @@ export default function TransactionDetail() {
     );
 
     if (loading) {
-        return <Spinner />;
+        return (
+            <>
+                <Header back_location="/txns" title="Transaction details"></Header>
+                <Spinner />
+            </>
+        );
     }
     if (error) {
         return <div className="error">{JSON.stringify(error)}</div>;
