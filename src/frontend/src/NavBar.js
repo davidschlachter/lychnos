@@ -22,7 +22,7 @@ export default function NavBar() {
                 showLabels
             >
                 <BottomNavigationAction label="Summary" icon={<AlignHorizontalLeftIcon />} value="/" to="/" component={Link} />
-                <BottomNavigationAction label="New Txn" icon={<AddBoxIcon />} value="/new" to="/new" component={Link} />
+                <BottomNavigationAction label="New Txn" icon={<AddBoxIcon />} value="/newTxn" to="/newTxn" component={Link} />
                 <BottomNavigationAction label="Txns" icon={<ListAltIcon />} value="/txns" to="/txns" component={Link} />
             </BottomNavigation >
         </Paper >
