@@ -1,6 +1,5 @@
 import React from 'react';
 import Header from './Header.js';
-import AccountIcon from './AccountIcon.js';
 import FriendlyDate from './FriendlyDate.js';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
