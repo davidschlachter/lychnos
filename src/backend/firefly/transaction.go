@@ -164,6 +164,7 @@ func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 	}
 	f.invalidateCategoryCache(key)
 	f.invalidateAccountsCache()
+	f.invalidateTransactionsCache()
 
 	w.WriteHeader(http.StatusCreated)
 	fmt.Fprint(w, string(respBody))
@@ -221,7 +222,7 @@ func (f *Firefly) listTxns(w http.ResponseWriter, req *http.Request) {
 		page, _ = strconv.Atoi(pageStr[0]) // if page cannot be parsed, we'll return page 1
 	}
 
-	txns, err := f.ListTransactions(page)
+	txns, err := f.CachedTransactions(page)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(w, "Could not list transactions: %s", err)
