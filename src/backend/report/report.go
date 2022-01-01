@@ -61,18 +61,46 @@ type CategorySummary struct {
 }
 
 func (r *Reports) listCategorySummaries(w http.ResponseWriter, req *http.Request) {
+	var (
+		budget int
+		err    error
+	)
+
+	// If a budget was not provided, fetch the current one.
 	budgetStr, ok := req.URL.Query()["budget"]
-	if !ok || len(budgetStr) != 1 {
+	if !ok || len(budgetStr) == 0 {
+		// get the current budget
+		bgts, err := r.b.List()
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Could not fetch budgets to find latest budget for report: %s\n", err)
+			return
+		}
+		now := time.Now()
+		for _, b := range bgts {
+			if now.After(b.Start) && now.Before(b.End) {
+				budget = b.ID
+				break
+			}
+		}
+		if budget == 0 {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Could not identify a current budget for summary")
+			return
+		}
+	} else if len(budgetStr) > 1 {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "budget parameter must be provided")
+		fmt.Fprintf(w, "Got %d budget IDs, wanted 0 or 1", len(budgetStr))
 		return
+	} else {
+		budget, err = strconv.Atoi(budgetStr[0])
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "Could not parse budget ID: %s\n", budgetStr[0])
+			return
+		}
 	}
-	budget, err := strconv.Atoi(budgetStr[0])
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Could not parse budget ID: %s\n", budgetStr[0])
-		return
-	}
+
 	summaries, err := r.ListCategorySummaries(budget)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
