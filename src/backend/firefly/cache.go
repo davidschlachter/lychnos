@@ -138,11 +138,20 @@ func (f *Firefly) refreshCategoryTotals(key categoryTotalsKey) error {
 	} else {
 		c, err = f.FetchCategoryTotal(key.CategoryID, key.Start, key.End)
 	}
+	if err != nil {
+		return fmt.Errorf("could not update category totals cache: %s", err)
+	}
+	if key.CategoryID != 0 && len(c) != 1 {
+		return fmt.Errorf("got %d category totals, wanted 1 for key %d, %s, %s", len(c), key.CategoryID, key.Start, key.End)
+	}
+	if key.CategoryID == 0 && len(c) == 0 {
+		return fmt.Errorf("got 0 category totals, wanted at least one for key %d, %s, %s", key.CategoryID, key.Start, key.End)
+	}
 	f.cache.mu.Lock()
 	log.Printf("Updating CategoryTotals cache for: %d, %s, %s", key.CategoryID, key.Start, key.End)
 	f.cache.CategoryTotals[key] = c
 	f.cache.mu.Unlock()
-	return err
+	return nil
 }
 
 func (f *Firefly) CachedTransactions(page int) ([]Transactions, error) {
@@ -198,7 +207,10 @@ func (f *Firefly) RefreshCaches(c *categorybudget.CategoryBudgets, b *budget.Bud
 				Start: bgt.Start,
 				End:   bgt.End,
 			}
-			_ = f.refreshCategoryTotals(key)
+			err := f.refreshCategoryTotals(key)
+			if err != nil {
+				log.Printf("Failed to seed category totals cache: %s", err)
+			}
 		}(bgt)
 		for _, cb := range cbs {
 			if cb.Budget != bgt.ID {
@@ -212,7 +224,10 @@ func (f *Firefly) RefreshCaches(c *categorybudget.CategoryBudgets, b *budget.Bud
 						Start:      i.Start,
 						End:        i.End,
 					}
-					f.refreshCategoryTotals(key)
+					err := f.refreshCategoryTotals(key)
+					if err != nil {
+						log.Printf("Failed to seed category totals cache: %s", err)
+					}
 				}(i, cb)
 			}
 		}

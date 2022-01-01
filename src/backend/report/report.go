@@ -191,8 +191,8 @@ func (r *Reports) FetchCategorySummary(catBgtID int) ([]CategorySummaryDetail, e
 
 	for _, i := range intervals {
 		ct, err := r.f.CachedFetchCategoryTotals(cs.ID, i.Start, i.End)
-		if err != nil || len(ct) != 1 {
-			return nil, fmt.Errorf("could not fetch category total: %s", err)
+		if err != nil {
+			return nil, fmt.Errorf("could not generate category summary: %s", err)
 		}
 		results[0].Totals = append(results[0].Totals, ct[0])
 	}

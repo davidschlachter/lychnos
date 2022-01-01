@@ -17,7 +17,7 @@ func main() {
 	db := connect()
 	setupDB(db)
 
-	f, err := firefly.New(&http.Client{Timeout: time.Second * 5}, os.Getenv("FIREFLY_TOKEN"), os.Getenv("FIREFLY_URL"))
+	f, err := firefly.New(&http.Client{Timeout: time.Second * 30}, os.Getenv("FIREFLY_TOKEN"), os.Getenv("FIREFLY_URL"))
 	if err != nil {
 		fmt.Printf("Could not initialize Firefly-III client: %s\n", err)
 		os.Exit(1)
