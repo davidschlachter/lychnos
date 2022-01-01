@@ -58,6 +58,8 @@ type CategorySummary struct {
 	CategoryBudgetID int             `json:"category_budget_id"`
 	Amount           decimal.Decimal `json:"amount"`
 	Sum              decimal.Decimal `json:"sum"`
+	Start            time.Time       `json:"start"`
+	End              time.Time       `json:"end"`
 }
 
 func (r *Reports) listCategorySummaries(w http.ResponseWriter, req *http.Request) {
@@ -136,6 +138,8 @@ func (r *Reports) ListCategorySummaries(budgetID int) ([]CategorySummary, error)
 		cs.ID = c.Category
 		cs.CategoryBudgetID = c.ID
 		cs.Amount = c.Amount
+		cs.Start = budget[0].Start
+		cs.End = budget[0].End
 		results = append(results, cs)
 	}
 
@@ -201,6 +205,8 @@ func (r *Reports) FetchCategorySummary(catBgtID int) ([]CategorySummaryDetail, e
 		}
 		cs.ID = c.ID
 		cs.Name = c.Name
+		cs.Start = budget[0].Start
+		cs.End = budget[0].End
 		break
 	}
 	if cs.ID == 0 && cs.Name == "" {
