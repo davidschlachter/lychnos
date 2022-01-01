@@ -142,8 +142,6 @@ func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Determine the transaction type
-	t.SourceID, t.SourceName = f.resolveAccount(t.SourceID, t.SourceName)
-	t.DestinationID, t.DestinationName = f.resolveAccount(t.DestinationID, t.DestinationName)
 	t.Type = f.calcTxnType(t.SourceID, t.SourceName, t.DestinationID, t.DestinationName)
 	if t.Type == "" {
 		httperror.Send(w, req, http.StatusInternalServerError, fmt.Sprintf("Could not determine transaction type with provided account information: sourceID: %s, sourceName: %s; destID: %s, destName: %s\n", t.SourceID, t.SourceName, t.DestinationID, t.DestinationName))
@@ -252,6 +250,8 @@ const (
 // TODO(davidschlachter): this may be confused if we have two accounts with the
 // same name but different types, e.g. expense and revenue
 func (f *Firefly) calcTxnType(srcID, srcName, destID, destName string) string {
+	srcID, srcName = f.resolveAccount(srcID, srcName)
+	destID, destName = f.resolveAccount(destID, destName)
 	var srcType, destType string
 	accts, _ := f.CachedAccounts()
 	// Find type of existing accounts
@@ -274,9 +274,9 @@ func (f *Firefly) calcTxnType(srcID, srcName, destID, destName string) string {
 		destType = AcctTypeExpense
 	}
 	// Determine transaction type
-	if srcType == AcctTypeAsset && destType == AcctTypeExpense {
+	if srcType == AcctTypeAsset && (destType == AcctTypeExpense || destType == AcctTypeRevenue) {
 		return "withdrawal"
-	} else if srcType == AcctTypeRevenue && destType == AcctTypeAsset {
+	} else if (srcType == AcctTypeRevenue || srcType == AcctTypeExpense) && destType == AcctTypeAsset {
 		return "deposit"
 	} else if srcType == AcctTypeAsset && destType == AcctTypeAsset {
 		return "transfer"
