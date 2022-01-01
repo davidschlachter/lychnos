@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/davidschlachter/lychnos/src/backend/httperror"
 	"github.com/shopspring/decimal"
 )
 
@@ -65,16 +66,14 @@ type createRequest struct {
 func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 	err := req.ParseForm()
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Could not parse POST data\n")
+		httperror.Send(w, req, http.StatusInternalServerError, "Could not parse POST data")
 		return
 	}
 
 	// Build the transaction struct
 	amt, err := decimal.NewFromString(req.Form.Get("amount"))
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Could not parse amount: %s\n", req.Form.Get("amount"))
+		httperror.Send(w, req, http.StatusInternalServerError, fmt.Sprintf("Could not parse amount: %s", req.Form.Get("amount")))
 		return
 	}
 	t := Transaction{
@@ -109,8 +108,7 @@ func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 			}
 		}
 		if !ok {
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "Could not find Category with ID = '%s' or Name = '%s'", t.CategoryID, t.CategoryName)
+			httperror.Send(w, req, http.StatusBadRequest, fmt.Sprintf("Could not find Category with ID = '%s' or Name = '%s'", t.CategoryID, t.CategoryName))
 			return
 		}
 	}
@@ -119,32 +117,27 @@ func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 	// firefly internal dateFormat := "2006-01-02T15:04:05-07:00"
 	txnDate, err := time.Parse(dateFormat, t.Date)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Could not parse date '%s'", t.Date)
+		httperror.Send(w, req, http.StatusBadRequest, fmt.Sprintf("Could not parse date '%s'", t.Date))
 		return
 	}
 
 	if t.Description == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprint(w, "description must be provided")
+		httperror.Send(w, req, http.StatusBadRequest, "description must be provided")
 		return
 	}
 
 	if t.SourceID == "" && t.SourceName == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprint(w, "source_id or source_name must be provided")
+		httperror.Send(w, req, http.StatusBadRequest, "source_id or source_name must be provided")
 		return
 	}
 
 	if t.DestinationID == "" && t.DestinationName == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprint(w, "destination_id or destination_name must be provided")
+		httperror.Send(w, req, http.StatusBadRequest, "destination_id or destination_name must be provided")
 		return
 	}
 
 	if t.Amount.IsZero() {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprint(w, "amount must be provided")
+		httperror.Send(w, req, http.StatusBadRequest, "amount must be provided")
 		return
 	}
 
@@ -153,8 +146,7 @@ func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 	t.DestinationID, t.DestinationName = f.resolveAccount(t.DestinationID, t.DestinationName)
 	t.Type = f.calcTxnType(t.SourceID, t.SourceName, t.DestinationID, t.DestinationName)
 	if t.Type == "" {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Could not determine transaction type with provided account information: %s, %s; %s, %s\n", t.SourceID, t.SourceName, t.DestinationID, t.DestinationName)
+		httperror.Send(w, req, http.StatusInternalServerError, fmt.Sprintf("Could not determine transaction type with provided account information: sourceID: %s, sourceName: %s; destID: %s, destName: %s\n", t.SourceID, t.SourceName, t.DestinationID, t.DestinationName))
 		return
 	}
 
@@ -167,8 +159,7 @@ func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 
 	body, err := json.Marshal(doc)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Could not marshal CreateRequest: %s", err)
+		httperror.Send(w, req, http.StatusInternalServerError, fmt.Sprintf("Could not marshal CreateRequest: %s", err))
 		return
 	}
 	r, _ := http.NewRequest("POST", f.url+path, bytes.NewBuffer(body))
@@ -176,15 +167,13 @@ func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 	r.Header.Add("Content-Type", "application/json")
 	resp, err := f.client.Do(r)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Could not create transaction: %s", err)
+		httperror.Send(w, req, http.StatusInternalServerError, fmt.Sprintf("Could not create transaction: %s", err))
 		return
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Could not create transaction: %s", resp.Status)
+		httperror.Send(w, req, http.StatusInternalServerError, fmt.Sprintf("Could not create transaction, got status %d %s", resp.StatusCode, resp.Status))
 		return
 	}
 
@@ -194,8 +183,7 @@ func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 	}
 	json.NewDecoder(resp.Body).Decode(&result)
 	if result.Data.ID == "" {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprint(w, "Failed to create transaction.")
+		httperror.Send(w, req, http.StatusInternalServerError, fmt.Sprintf("Could not create transaction: %s", err))
 		return
 	}
 
@@ -306,8 +294,7 @@ func (f *Firefly) listTxns(w http.ResponseWriter, req *http.Request) {
 
 	txns, err := f.CachedTransactions(page)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Could not list transactions: %s", err)
+		httperror.Send(w, req, http.StatusInternalServerError, fmt.Sprintf("Could not list transactions: %s", err))
 		return
 	}
 
@@ -335,9 +322,7 @@ func (f *Firefly) ListTransactions(page int) ([]Transactions, error) {
 	json.NewDecoder(resp.Body).Decode(&txns)
 
 	var results []Transactions
-	for _, t := range txns.Data {
-		results = append(results, t)
-	}
+	results = append(results, txns.Data...)
 
 	return results, nil
 }
@@ -345,15 +330,13 @@ func (f *Firefly) ListTransactions(page int) ([]Transactions, error) {
 func (f *Firefly) fetchTxn(w http.ResponseWriter, req *http.Request) {
 	id := req.URL.Path[strings.LastIndex(req.URL.Path, "/")+1:]
 	if _, err := strconv.Atoi(id); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Could not parse transaction ID: %s\n", id)
+		httperror.Send(w, req, http.StatusBadRequest, fmt.Sprintf("Could not parse transaction ID: %s", id))
 		return
 	}
 
 	txn, err := f.FetchTransaction(id)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Could not fetch transaction: %s", err)
+		httperror.Send(w, req, http.StatusInternalServerError, fmt.Sprintf("Could not fetch transaction: %s", err))
 		return
 	}
 

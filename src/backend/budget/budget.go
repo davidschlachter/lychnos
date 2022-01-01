@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/davidschlachter/lychnos/src/backend/httperror"
 )
 
 type Budget struct {
@@ -48,15 +50,13 @@ func (b *Budgets) Handle(w http.ResponseWriter, req *http.Request) {
 func (b *Budgets) fetch(w http.ResponseWriter, req *http.Request) {
 	id := req.URL.Path[strings.LastIndex(req.URL.Path, "/")+1:]
 	if _, err := strconv.Atoi(id); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Could not parse budget ID: %s\n", id)
+		httperror.Send(w, req, http.StatusBadRequest, fmt.Sprintf("Could not parse budget ID: %s\n", id))
 		return
 	}
 
 	budgets, err := b.Fetch(id)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Could not fetch budget: %s", err)
+		httperror.Send(w, req, http.StatusInternalServerError, fmt.Sprintf("Could not fetch budget: %s", err))
 		return
 	}
 
@@ -84,8 +84,7 @@ func (b *Budgets) Fetch(id string) ([]Budget, error) {
 func (b *Budgets) list(w http.ResponseWriter, req *http.Request) {
 	budgets, err := b.List()
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Could not list budgets: %s", err)
+		httperror.Send(w, req, http.StatusInternalServerError, fmt.Sprintf("Could not list budgets: %s", err))
 		return
 	}
 
@@ -126,8 +125,7 @@ func (b *Budgets) upsert(w http.ResponseWriter, req *http.Request) {
 
 	err = req.ParseForm()
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Could not parse POST data\n")
+		httperror.Send(w, req, http.StatusInternalServerError, "Could not parse POST data")
 		return
 	}
 
@@ -138,16 +136,14 @@ func (b *Budgets) upsert(w http.ResponseWriter, req *http.Request) {
 	} else {
 		id, err = strconv.Atoi(idStr)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "Could not parse ID: %s\n", idStr)
+			httperror.Send(w, req, http.StatusBadRequest, fmt.Sprintf("Could not parse ID: %s", idStr))
 			return
 		}
 	}
 	startString := req.Form.Get("start")
 	endString := req.Form.Get("end")
 	if len(startString) == 0 || len(endString) == 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Must provide start and end datetimes\n")
+		httperror.Send(w, req, http.StatusBadRequest, "Must provide start and end datetimes")
 		return
 	}
 	intervalString := req.Form.Get("interval")
@@ -156,8 +152,7 @@ func (b *Budgets) upsert(w http.ResponseWriter, req *http.Request) {
 	} else {
 		interval, err = strconv.Atoi(intervalString)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "Interval must be an integer\n")
+			httperror.Send(w, req, http.StatusBadRequest, "Interval must be an integer")
 			return
 		}
 	}
@@ -167,19 +162,16 @@ func (b *Budgets) upsert(w http.ResponseWriter, req *http.Request) {
 	// will be created in UTC, which will lead to unexpected behaviour.
 	start, err := time.Parse(format, startString)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Could not parse start time: %s", err)
+		httperror.Send(w, req, http.StatusBadRequest, fmt.Sprintf("Could not parse start time: %s", err))
 		return
 	}
 	end, err := time.Parse(format, endString)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Could not parse end time: %s", err)
+		httperror.Send(w, req, http.StatusBadRequest, fmt.Sprintf("Could not parse end time: %s", err))
 		return
 	}
 	if start.After(end) {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "start must be before end\n")
+		httperror.Send(w, req, http.StatusBadRequest, "start must be before end")
 		return
 	}
 
@@ -189,8 +181,7 @@ func (b *Budgets) upsert(w http.ResponseWriter, req *http.Request) {
 	// Insert the budget into the database
 	_, err = b.db.Exec(q, id, start.Format(format), end.Format(format), interval)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Could not upsert budget: %s", err)
+		httperror.Send(w, req, http.StatusBadRequest, fmt.Sprintf("Could not upsert budget: %s", err))
 		return
 	}
 
@@ -208,15 +199,13 @@ func (b *Budgets) delete(w http.ResponseWriter, req *http.Request) {
 	idStr := req.URL.Path[strings.LastIndex(req.URL.Path, "/")+1:]
 	id, err = strconv.Atoi(idStr)
 	if err != nil || id < 1 {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Invalid ID: %s\n", idStr)
+		httperror.Send(w, req, http.StatusBadRequest, fmt.Sprintf("Could not parse ID: %s", idStr))
 		return
 	}
 
 	_, err = b.db.Exec(q, id)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Could not delete budget: %s", err)
+		httperror.Send(w, req, http.StatusBadRequest, fmt.Sprintf("Could not delete budget: %s", err))
 		return
 	}
 

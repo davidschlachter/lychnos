@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"regexp"
 
+	"github.com/davidschlachter/lychnos/src/backend/httperror"
 	"github.com/shopspring/decimal"
 )
 
@@ -45,8 +46,7 @@ func (f *Firefly) HandleAccount(w http.ResponseWriter, req *http.Request) {
 func (f *Firefly) listAccounts(w http.ResponseWriter, req *http.Request) {
 	accounts, err := f.CachedAccounts()
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Could not list accounts: %s", err)
+		httperror.Send(w, req, http.StatusInternalServerError, fmt.Sprintf("Could not list accounts: %s", err))
 		return
 	}
 

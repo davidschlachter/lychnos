@@ -48,6 +48,8 @@ class CategorySummaries extends React.Component {
             return <div>Error: {error.message}</div>;
         } else if (!isLoaded) {
             return <Spinner />;
+        } else if (typeof summaries !== 'undefined' && "error" in summaries) {
+            return <div>Error: {summaries.error}</div>;
         } else {
             let timeSpent = 0
             let start = new Date(summaries[0].start)

@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/davidschlachter/lychnos/src/backend/httperror"
 	"github.com/shopspring/decimal"
 )
 
@@ -49,15 +50,13 @@ func (c *CategoryBudgets) Handle(w http.ResponseWriter, req *http.Request) {
 func (c *CategoryBudgets) fetch(w http.ResponseWriter, req *http.Request) {
 	id := req.URL.Path[strings.LastIndex(req.URL.Path, "/")+1:]
 	if _, err := strconv.Atoi(id); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Could not parse categorybudget ID: %s\n", id)
+		httperror.Send(w, req, http.StatusBadRequest, fmt.Sprintf("Could not parse categorybudget ID: %s", id))
 		return
 	}
 
 	categoryBudgets, err := c.Fetch(id)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Could not fetch categorybudget: %s", err)
+		httperror.Send(w, req, http.StatusInternalServerError, fmt.Sprintf("Could not fetch categorybudget: %s", err))
 		return
 	}
 
@@ -86,8 +85,7 @@ func (c *CategoryBudgets) Fetch(id string) ([]CategoryBudget, error) {
 func (c *CategoryBudgets) list(w http.ResponseWriter, req *http.Request) {
 	categoryBudgets, err := c.List()
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Could not list categorybudget: %s", err)
+		httperror.Send(w, req, http.StatusInternalServerError, fmt.Sprintf("Could not list categorybudget: %s", err))
 		return
 	}
 
@@ -125,15 +123,13 @@ func (c *CategoryBudgets) delete(w http.ResponseWriter, req *http.Request) {
 	idStr := req.URL.Path[strings.LastIndex(req.URL.Path, "/")+1:]
 	id, err = strconv.Atoi(idStr)
 	if err != nil || id < 1 {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Invalid ID: %s\n", idStr)
+		httperror.Send(w, req, http.StatusBadRequest, fmt.Sprintf("Invalid ID: %s", idStr))
 		return
 	}
 
 	_, err = c.db.Exec(q, id)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Could not delete categorybudget: %s", err)
+		httperror.Send(w, req, http.StatusInternalServerError, fmt.Sprintf("Could not delete categorybudget: %s", err))
 		return
 	}
 
@@ -153,8 +149,7 @@ func (c *CategoryBudgets) upsert(w http.ResponseWriter, req *http.Request) {
 
 	err = req.ParseForm()
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Could not parse POST data\n")
+		httperror.Send(w, req, http.StatusInternalServerError, "Could not parse POST data")
 		return
 	}
 
@@ -164,30 +159,26 @@ func (c *CategoryBudgets) upsert(w http.ResponseWriter, req *http.Request) {
 	} else {
 		id, err = strconv.Atoi(idStr)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "Could not parse ID: %s\n", idStr)
+			httperror.Send(w, req, http.StatusBadRequest, fmt.Sprintf("Could not parse ID: %s\n", idStr))
 			return
 		}
 	}
 	budgetStr := req.Form.Get("budget")
 	budget, err = strconv.Atoi(budgetStr)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Could not parse budget ID: %s\n", budgetStr)
+		httperror.Send(w, req, http.StatusBadRequest, fmt.Sprintf("Could not parse budget ID: %s\n", budgetStr))
 		return
 	}
 	categoryStr := req.Form.Get("category")
 	category, err = strconv.Atoi(categoryStr)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Could not parse category ID: %s\n", categoryStr)
+		httperror.Send(w, req, http.StatusBadRequest, fmt.Sprintf("Could not parse category ID: %s\n", categoryStr))
 		return
 	}
 	amountStr := req.Form.Get("amount")
 	amount, err = decimal.NewFromString(amountStr)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Could not parse amount: %s\n", amountStr)
+		httperror.Send(w, req, http.StatusBadRequest, fmt.Sprintf("Could not parse amount: %s\n", amountStr))
 		return
 	}
 
@@ -199,8 +190,7 @@ func (c *CategoryBudgets) upsert(w http.ResponseWriter, req *http.Request) {
 
 	_, err = c.db.Exec(q, id, budget, category, amount)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Could not upsert categorybudget: %s", err)
+		httperror.Send(w, req, http.StatusInternalServerError, fmt.Sprintf("Could not upsert categorybudget: %s", err))
 		return
 	}
 
