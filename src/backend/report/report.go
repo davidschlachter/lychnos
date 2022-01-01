@@ -119,7 +119,11 @@ func (r *Reports) ListCategorySummaries(budgetID int) ([]CategorySummary, error)
 	if err != nil {
 		return nil, fmt.Errorf("could not list categorybudgets: %s", err)
 	}
-	categories, err := r.f.CachedListCategoryTotals(budget[0].Start, budget[0].End)
+	categorytotals, err := r.f.CachedListCategoryTotals(budget[0].Start, budget[0].End)
+	if err != nil {
+		return nil, fmt.Errorf("could not list Category Totals: %s", err)
+	}
+	categories, err := r.f.CachedCategories()
 	if err != nil {
 		return nil, fmt.Errorf("could not list Categories: %s", err)
 	}
@@ -142,10 +146,16 @@ func (r *Reports) ListCategorySummaries(budgetID int) ([]CategorySummary, error)
 	// TODO(davidschlachter): n^2 complexity. Shouldn't have too many
 	// Categories, but this could be improved.
 	for i := range results {
+		for j := range categorytotals {
+			if categorytotals[j].ID == results[i].ID {
+				results[i].Name = categorytotals[j].Name
+				results[i].Sum = categorytotals[j].Earned.Add(categorytotals[j].Spent)
+				break
+			}
+		}
 		for j := range categories {
 			if categories[j].ID == results[i].ID {
 				results[i].Name = categories[j].Name
-				results[i].Sum = categories[j].Earned.Add(categories[j].Spent)
 				break
 			}
 		}
