@@ -19,28 +19,12 @@ class CategorySummaries extends React.Component {
         this.state = {
             error: null,
             isLoaded: false,
-            summaries: [],
-            budgets: []
+            summaries: []
         };
     }
 
     componentDidMount() {
-        fetch("/api/budgets/")
-            .then(res => res.json())
-            .then(
-                (result) => {
-                    this.setState({
-                        budgets: result
-                    });
-                },
-                (error) => {
-                    this.setState({
-                        isLoaded: true,
-                        error
-                    });
-                }
-            )
-        fetch("/api/reports/categorysummary/?budget=1")
+        fetch("/api/reports/categorysummary/")
             .then(res => res.json())
             .then(
                 (result) => {
@@ -59,19 +43,18 @@ class CategorySummaries extends React.Component {
     }
 
     render() {
-        const { error, isLoaded, summaries, budgets } = this.state;
+        const { error, isLoaded, summaries } = this.state;
         if (error) {
             return <div>Error: {error.message}</div>;
         } else if (!isLoaded) {
             return <Spinner />;
         } else {
             let timeSpent = 0
-            if (budgets.length > 1) {
-                let start = new Date(budgets[0].start)
-                let end = new Date(budgets[0].end)
-                let now = new Date()
-                timeSpent = (Math.abs(now - start) / Math.abs(end - start)) * 100
-            }
+            let start = new Date(summaries[0].start)
+            let end = new Date(summaries[0].end)
+            let now = new Date()
+            timeSpent = (Math.abs(now - start) / Math.abs(end - start)) * 100
+
             return (
                 <Box sx={{ p: 2, mb: 6 }}>
                     <TableContainer component={Paper}>

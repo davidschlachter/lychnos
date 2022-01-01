@@ -163,6 +163,8 @@ func (b *Budgets) upsert(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Validate dates
+	// TODO(davidschlachter): if the client doesn't provide a time zone, these
+	// will be created in UTC, which will lead to unexpected behaviour.
 	start, err := time.Parse(format, startString)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)

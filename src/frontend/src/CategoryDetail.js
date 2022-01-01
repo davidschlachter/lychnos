@@ -19,27 +19,11 @@ class CategoryDetail extends React.Component {
         this.state = {
             error: null,
             isLoaded: false,
-            details: [],
-            budgets: []
+            details: []
         };
     }
 
     componentDidMount() {
-        fetch("/api/budgets/")
-            .then(res => res.json())
-            .then(
-                (result) => {
-                    this.setState({
-                        budgets: result
-                    });
-                },
-                (error) => {
-                    this.setState({
-                        isLoaded: true,
-                        error
-                    });
-                }
-            )
         fetch("/api/reports/categorysummary/" + String(this.props.categoryId))
             .then(res => res.json())
             .then(
@@ -59,7 +43,7 @@ class CategoryDetail extends React.Component {
     }
 
     render() {
-        const { error, isLoaded, details, budgets } = this.state;
+        const { error, isLoaded, details } = this.state;
         if (error) {
             return <div>Error: {error.message}</div>;
         } else if (!isLoaded) {
@@ -71,12 +55,10 @@ class CategoryDetail extends React.Component {
             );
         } else {
             let timeSpent = 0
-            if (budgets.length > 1) {
-                let start = new Date(budgets[0].start)
-                let end = new Date(budgets[0].end)
-                let now = new Date()
-                timeSpent = (Math.abs(now - start) / Math.abs(end - start)) * 100
-            }
+            let start = new Date(details[0].start)
+            let end = new Date(details[0].end)
+            let now = new Date()
+            timeSpent = (Math.abs(now - start) / Math.abs(end - start)) * 100
             let totalSpent = 0
             details[0].totals.map(item => (
                 totalSpent += Math.round(parseFloat(item.earned) + parseFloat(item.spent))
