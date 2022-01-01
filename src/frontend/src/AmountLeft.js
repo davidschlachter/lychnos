@@ -10,7 +10,10 @@ function AmountLeft(props) {
     if (timeSpent == 100) {
         left = Math.round(props.amount - props.sum)
     } else {
-        left = Math.round((props.amount - props.sum) / Math.ceil((1 - timeSpent / 100) * 12))
+        left = Math.round((props.amount - props.sum) / Math.floor((1 - timeSpent / 100) * 12))
+        if (left == 0) {
+            left = 1;
+        }
     }
     let color = 'black'
     let sign = 1
