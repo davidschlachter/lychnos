@@ -1,17 +1,17 @@
 import React from 'react';
+import AmountLeft from './AmountLeft';
 import FillBar from './FillBar.js'
 import Header from './Header.js'
 import Spinner from './Spinner.js'
-import AmountLeft from './AmountLeft';
-import Typography from '@mui/material/Typography';
-import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
+import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import Typography from '@mui/material/Typography';
 
 class CategoryDetail extends React.Component {
     constructor(props) {
@@ -63,7 +63,12 @@ class CategoryDetail extends React.Component {
         if (error) {
             return <div>Error: {error.message}</div>;
         } else if (!isLoaded) {
-            return <Spinner />;
+            return (
+                <>
+                    <Header back_location="/" title="Category details"></Header>
+                    <Spinner />
+                </>
+            );
         } else {
             let timeSpent = 0
             if (budgets.length > 1) {
@@ -77,10 +82,13 @@ class CategoryDetail extends React.Component {
                 totalSpent += Math.round(parseFloat(item.earned) + parseFloat(item.spent))
             ));
             return (
-                <Paper>
-                    <Header back_location="/" title={details[0].name}></Header>
-                    <Box sx={{ p: 2 }}>
+                <>
+                    <Header back_location="/" title="Category details"></Header>
+                    <Box sx={{ p: 2, mb: 6 }}>
                         <Typography variant="h6" component="div" align="center" gutterBottom>
+                            {details[0].name}
+                        </Typography>
+                        <Typography variant="subtitle1" component="div" align="center" gutterBottom>
                             Budgeted: {details[0].amount}, Actual: {totalSpent}<br />
                             Left per month: <AmountLeft amount={details[0].amount} sum={totalSpent} timeSpent={timeSpent} />
                         </Typography>
@@ -89,7 +97,7 @@ class CategoryDetail extends React.Component {
                         </div>
                         <br />
                         <TableContainer component={Paper}>
-                            <Table style={{ "width": "100%", "margin-bottom": "3.5em" }}>
+                            <Table style={{ "width": "100%" }}>
                                 <TableHead>
                                     <TableRow>
                                         <TableCell>Month</TableCell>
@@ -107,7 +115,7 @@ class CategoryDetail extends React.Component {
                             </Table>
                         </TableContainer>
                     </Box>
-                </Paper>
+                </>
             );
         }
     }

@@ -2,6 +2,7 @@ import CategorySummaries from './CategorySummaries';
 import CategoryDetail from './CategoryDetail';
 import TransactionList from './TransactionList';
 import TransactionDetail from './TransactionDetail';
+import NewTxn from './NewTxn';
 import NavBar from './NavBar';
 import {
   BrowserRouter as Router,
@@ -16,7 +17,7 @@ function App() {
     <>
       <Router basename={'/app'}>
         <Routes>
-          <Route path="/new" element={<NewTxn />} />
+          <Route path="/newTxn" element={<NewTxn />} />
           <Route path="/txns" element={<TransactionList />} />
           <Route path="/" element={<CategorySummaries />} />
           <Route path="/categorydetail/:categoryId" element={<CategoryDetailHelper />} />
@@ -26,10 +27,6 @@ function App() {
       </Router>
     </>
   );
-}
-
-function NewTxn() {
-  return <h2>New transaction</h2>;
 }
 
 function CategoryDetailHelper() {
