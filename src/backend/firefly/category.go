@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/davidschlachter/lychnos/src/backend/httperror"
 	"github.com/shopspring/decimal"
 )
 
@@ -33,8 +34,7 @@ func (f *Firefly) HandleCategory(w http.ResponseWriter, req *http.Request) {
 func (f *Firefly) listCategories(w http.ResponseWriter, req *http.Request) {
 	categories, err := f.CachedCategories()
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Could not list categories: %s", err)
+		httperror.Send(w, req, http.StatusInternalServerError, fmt.Sprintf("Could not list categories: %s", err))
 		return
 	}
 

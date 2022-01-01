@@ -53,6 +53,8 @@ class CategoryDetail extends React.Component {
                     <Spinner />
                 </>
             );
+        } else if (typeof details !== 'undefined' && "error" in details) {
+            return <div>Error: {details.error}</div>;
         } else {
             let timeSpent = 0
             let start = new Date(details[0].start)

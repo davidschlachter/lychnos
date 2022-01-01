@@ -12,6 +12,7 @@ import (
 	"github.com/davidschlachter/lychnos/src/backend/budget"
 	"github.com/davidschlachter/lychnos/src/backend/categorybudget"
 	"github.com/davidschlachter/lychnos/src/backend/firefly"
+	"github.com/davidschlachter/lychnos/src/backend/httperror"
 	"github.com/davidschlachter/lychnos/src/backend/interval"
 	"github.com/shopspring/decimal"
 )
@@ -74,8 +75,7 @@ func (r *Reports) listCategorySummaries(w http.ResponseWriter, req *http.Request
 		// get the current budget
 		bgts, err := r.b.List()
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "Could not fetch budgets to find latest budget for report: %s\n", err)
+			httperror.Send(w, req, http.StatusBadRequest, fmt.Sprintf("Could not fetch budgets to find latest budget for report: %s\n", err))
 			return
 		}
 		now := time.Now()
@@ -86,27 +86,23 @@ func (r *Reports) listCategorySummaries(w http.ResponseWriter, req *http.Request
 			}
 		}
 		if budget == 0 {
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "Could not identify a current budget for summary")
+			httperror.Send(w, req, http.StatusBadRequest, "Could not identify a current budget for summary")
 			return
 		}
 	} else if len(budgetStr) > 1 {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Got %d budget IDs, wanted 0 or 1", len(budgetStr))
+		httperror.Send(w, req, http.StatusBadRequest, fmt.Sprintf("Got %d budget IDs, wanted 0 or 1", len(budgetStr)))
 		return
 	} else {
 		budget, err = strconv.Atoi(budgetStr[0])
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "Could not parse budget ID: %s\n", budgetStr[0])
+			httperror.Send(w, req, http.StatusBadRequest, fmt.Sprintf("Could not parse budget ID: %s\n", budgetStr[0]))
 			return
 		}
 	}
 
 	summaries, err := r.ListCategorySummaries(budget)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Could not generate CategorySummaries: %s\n", err)
+		httperror.Send(w, req, http.StatusInternalServerError, fmt.Sprintf("Could not generate CategorySummaries: %s\n", err))
 		return
 	}
 
@@ -167,15 +163,13 @@ func (r *Reports) fetchCategorySummaries(w http.ResponseWriter, req *http.Reques
 	idStr := req.URL.Path[strings.LastIndex(req.URL.Path, "/")+1:]
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(w, "Could not parse categorybudget ID: %s\n", idStr)
+		httperror.Send(w, req, http.StatusBadRequest, fmt.Sprintf("Could not parse categorybudget ID: %s\n", idStr))
 		return
 	}
 
 	summary, err := r.FetchCategorySummary(id)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w, "Could not generate CategorySummary: %s\n", err)
+		httperror.Send(w, req, http.StatusInternalServerError, fmt.Sprintf("Could not generate CategorySummary: %s\n", err))
 		return
 	}
 
