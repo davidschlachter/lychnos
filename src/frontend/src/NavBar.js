@@ -12,7 +12,7 @@ import {
 } from 'react-router-dom';
 
 export default function NavBar() {
-    const routeMatch = useRouteMatch(['/new', '/txns', '/']);
+    const routeMatch = useRouteMatch(['/newTxn', '/txns', '/']);
     const currentPage = routeMatch?.pattern?.path;
 
     return (
