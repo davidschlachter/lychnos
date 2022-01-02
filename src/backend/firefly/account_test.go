@@ -1,15 +1,25 @@
 package firefly_test
 
 import (
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
+	"github.com/davidschlachter/lychnos/src/backend/firefly"
 	"github.com/shopspring/decimal"
 )
 
 func TestListAccounts(t *testing.T) {
-	a, err := f.CachedAccounts()
-	if err != nil {
-		t.Fatalf("Unexpected error: %s\n", err)
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/api/accounts/?type=expense", nil)
+	f.HandleAccount(w, req)
+
+	var a []firefly.Account
+	json.NewDecoder(w.Body).Decode(&a)
+
+	if w.Result().StatusCode != http.StatusOK {
+		t.Fatalf("Status code = %d, want %d\n", w.Result().StatusCode, http.StatusOK)
 	}
 	if len(a) != 1 {
 		t.Fatalf("Got %d Accounts, wanted 1", len(a))
