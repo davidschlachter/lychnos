@@ -19,7 +19,7 @@ export default function TransactionDetail() {
     if (loading) {
         return (
             <>
-                <Header back_location="/txns" title="Transaction details"></Header>
+                <Header back_visibility="visible" back_location="/txns" title="Transaction details"></Header>
                 <Spinner />
             </>
         );
@@ -33,7 +33,7 @@ export default function TransactionDetail() {
 
     return (
         <>
-            <Header back_location="/txns" title="Transaction details"></Header>
+            <Header back_visibility="visible" back_location="/txns" title="Transaction details"></Header>
             <Box sx={{ p: 2, mb: 6 }}>
                 <Typography variant="h6" component="div" align="center" gutterBottom>
                     {response.attributes.transactions[0].description}
