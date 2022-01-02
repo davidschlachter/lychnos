@@ -1,17 +1,28 @@
 package firefly_test
 
 import (
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
+	"github.com/davidschlachter/lychnos/src/backend/firefly"
 	"github.com/shopspring/decimal"
 )
 
 func TestCategories(t *testing.T) {
-	c, err := f.CachedCategories()
-	if err != nil {
-		t.Fatalf("Unexpected error: %s\n", err)
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/api/categories/", nil)
+	f.HandleCategory(w, req)
+
+	var c []firefly.Category
+	json.NewDecoder(w.Body).Decode(&c)
+
+	if w.Result().StatusCode != http.StatusOK {
+		t.Fatalf("Status code = %d, want %d\n", w.Result().StatusCode, http.StatusOK)
 	}
+
 	if len(c) != 1 {
 		t.Fatalf("Got %d Categories, wanted 1", len(c))
 	}
