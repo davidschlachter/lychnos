@@ -2,8 +2,11 @@ package firefly_test
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
+	"strings"
 	"testing"
 
 	"github.com/davidschlachter/lychnos/src/backend/firefly"
@@ -114,5 +117,30 @@ func TestFetchTransaction(t *testing.T) {
 	}
 	if x.Attributes.Transactions[0].DestinationName != "Savings account" {
 		t.Fatalf("Got transaction DestinationName %s, wanted Savings account", x.Attributes.Transactions[0].DestinationName)
+	}
+}
+
+func TestCreateTransaction(t *testing.T) {
+	data := url.Values{}
+	data.Set("date", "2022-01-01")
+	data.Set("amount", "13.37")
+	data.Set("description", "Mirror")
+	data.Set("category_id", "4")
+	data.Set("category_name", "Apartment")
+	data.Set("source_name", "Savings accounts")
+	data.Set("destination_name", "Structube")
+
+	w := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/api/transactions/", strings.NewReader(data.Encode()))
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	f.HandleTxn(w, req)
+
+	res := w.Result()
+	defer res.Body.Close()
+
+	// Success is a 302 redirect to the transactions page
+	if w.Result().StatusCode != http.StatusFound {
+		body, _ := ioutil.ReadAll(res.Body)
+		t.Fatalf("Status code = %d, want %d\n. Response body: %s", w.Result().StatusCode, http.StatusOK, body)
 	}
 }
