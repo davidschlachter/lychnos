@@ -6,10 +6,8 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
-	"time"
 
 	"github.com/davidschlachter/lychnos/src/backend/firefly"
-	"github.com/shopspring/decimal"
 )
 
 var server *httptest.Server
@@ -39,87 +37,9 @@ func setup() {
 	mux.HandleFunc("/api/v1/autocomplete/categories", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`[{"id":"4","name":"Apartment"}]`))
 	})
+	mux.HandleFunc("/api/v1/accounts", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`{"data":[{"type":"accounts","id":"464","attributes":{"created_at":"2021-09-21T19:59:20-04:00","updated_at":"2021-09-21T19:59:20-04:00","active":true,"order":null,"name":"1Password","type":"expense","account_role":null,"currency_id":"9","currency_code":"CAD","currency_symbol":"C$","currency_decimal_places":2,"current_balance":"53.97","current_balance_date":"2022-01-01T23:59:59-05:00","notes":null,"monthly_payment_date":null,"credit_card_type":null,"account_number":null,"iban":null,"bic":null,"virtual_balance":"0.00","openinterest":null,"interest_period":null,"current_debt":null,"include_net_worth":true,"longitude":null,"latitude":null,"zoom_level":null},"links":{"self":"http:\/\/192.168.6.4:8753\/api\/v1\/accounts\/464","0":{"rel":"self","uri":"\/accounts\/464"}}}]}`))
+	})
+
 	server = httptest.NewServer(mux)
-}
-
-func TestCategories(t *testing.T) {
-	c, err := f.Categories()
-	if err != nil {
-		t.Fatalf("Unexpected error: %s\n", err)
-	}
-	if len(c) != 1 {
-		t.Fatalf("Got %d Categories, wanted 1", len(c))
-	}
-	if c[0].Name != "Apartment" {
-		t.Fatalf("Got %s as Category name, wanted Apartment", c[0].Name)
-	}
-	if c[0].ID != 4 {
-		t.Fatalf("Got %d as Category ID, wanted 4", c[0].ID)
-	}
-}
-
-func TestListCategoryTotals(t *testing.T) {
-	// (Interval not considered in test)
-	start := time.Now().Add(time.Hour * -1)
-	end := time.Now()
-	c, err := f.ListCategoryTotals(start, end)
-	if err != nil {
-		t.Fatalf("Unexpected error: %s\n", err)
-	}
-	if len(c) != 1 {
-		t.Fatalf("Got %d CategoryTotals, wanted 1", len(c))
-	}
-	if c[0].Name != "Apartment" {
-		t.Fatalf("Got %s as Category name, wanted Apartment", c[0].Name)
-	}
-	if c[0].ID != 4 {
-		t.Fatalf("Got %d as Category ID, wanted 4", c[0].ID)
-	}
-	spent, _ := decimal.NewFromString("-237.80")
-	if !c[0].Spent.Equal(spent) {
-		t.Fatalf("Got %d as Spent, wanted -237.80", c[0].Spent)
-	}
-	earned, _ := decimal.NewFromString("54.23")
-	if !c[0].Earned.Equal(earned) {
-		t.Fatalf("Got %d as Earned, wanted 54.23", c[0].Earned)
-	}
-	if !c[0].Start.Equal(start) {
-		t.Fatalf("Got %s as Start, wanted %s", c[0].Start, start)
-	}
-	if !c[0].End.Equal(end) {
-		t.Fatalf("Got %s as End, wanted %s", c[0].End, end)
-	}
-}
-
-func TestFetchCategoryTotal(t *testing.T) {
-	// (Interval not considered in test)
-	start := time.Now().Add(time.Hour * -1)
-	end := time.Now()
-	c, err := f.FetchCategoryTotal(4, start, end)
-	if err != nil {
-		t.Fatalf("Unexpected error: %s\n", err)
-	}
-	if len(c) != 1 {
-		t.Fatalf("Got %d CategoryTotals, wanted 1", len(c))
-	}
-	if c[0].Name != "Apartment" {
-		t.Fatalf("Got %s as Category name, wanted Apartment", c[0].Name)
-	}
-	if c[0].ID != 4 {
-		t.Fatalf("Got %d as Category ID, wanted 4", c[0].ID)
-	}
-	spent, _ := decimal.NewFromString("-323.75")
-	if !c[0].Spent.Equal(spent) {
-		t.Fatalf("Got %d as Spent, wanted -323.75", c[0].Spent)
-	}
-	earned, _ := decimal.NewFromString("54.23")
-	if !c[0].Earned.Equal(earned) {
-		t.Fatalf("Got %d as Earned, wanted 54.23", c[0].Earned)
-	}
-	if !c[0].Start.Equal(start) {
-		t.Fatalf("Got %s as Start, wanted %s", c[0].Start, start)
-	}
-	if !c[0].End.Equal(end) {
-		t.Fatalf("Got %s as End, wanted %s", c[0].End, end)
-	}
 }
