@@ -20,7 +20,7 @@ class CategorySummaries extends React.Component {
         this.state = {
             error: null,
             isLoaded: false,
-            summaries: []
+            summaries_data: []
         };
     }
 
@@ -31,7 +31,7 @@ class CategorySummaries extends React.Component {
                 (result) => {
                     this.setState({
                         isLoaded: true,
-                        summaries: result
+                        summaries_data: result
                     });
                 },
                 (error) => {
@@ -44,28 +44,30 @@ class CategorySummaries extends React.Component {
     }
 
     render() {
-        const { error, isLoaded, summaries } = this.state;
+        const { error, isLoaded, summaries_data } = this.state;
         if (error) {
             return <div>Error: {error.message}</div>;
         } else if (!isLoaded) {
             return (
                 <>
-                    <Header back_visibility="hidden" back_location="/" title="Category summaries"></Header>
+                    <Header back_visibility="hidden" back_location="/" title="Category summaries" budgetedit={true}></Header>
                     <Spinner />
                 </>
             );
-        } else if (typeof summaries !== 'undefined' && "error" in summaries) {
-            return <div>Error: {summaries.error}</div>;
+        } else if (typeof summaries_data !== 'undefined' && "error" in summaries_data) {
+            return <div>Error: {summaries_data.error}</div>;
         } else {
             let timeSpent = 0
-            let start = new Date(summaries[0].start)
-            let end = new Date(summaries[0].end)
+            let start = new Date(summaries_data[0].start)
+            let end = new Date(summaries_data[0].end)
             let now = new Date()
             timeSpent = (Math.abs(now - start) / Math.abs(end - start)) * 100
 
+            const summaries = [...summaries_data].sort((a, b) => (a.name > b.name ? 1 : -1));
+
             return (
                 <>
-                    <Header back_visibility="hidden" back_location="/" title="Category summaries"></Header>
+                    <Header back_visibility="hidden" back_location="/" title="Category summaries" budgetedit={true}></Header>
                     <Box sx={{ p: 2, mb: 6 }}>
                         <TableContainer component={Paper}>
                             <Table style={{ "width": "100%" }}>

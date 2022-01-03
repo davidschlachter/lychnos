@@ -29,7 +29,7 @@ func main() {
 	b := budget.New(db)
 	http.HandleFunc("/api/budgets/", b.Handle)
 
-	c := categorybudget.New(db)
+	c := categorybudget.New(db, b)
 	http.HandleFunc("/api/categorybudgets/", c.Handle)
 
 	r, err := report.New(f, c, b)
