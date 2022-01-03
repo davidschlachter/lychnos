@@ -1,10 +1,10 @@
 .fillBar {
-    width: calc(100% - 5px);
-    height: 1em;
-    background-color: beige;
+    width: calc(100% - 2px);
+    height: 2em;
+    background-color: #e3f2fd;
 }
 
 .filled {
     left: 0;
-    height: 1em;
+    height: 2em;
 }
