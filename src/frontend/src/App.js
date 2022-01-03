@@ -1,9 +1,10 @@
-import CategorySummaries from './CategorySummaries';
 import CategoryDetail from './CategoryDetail';
-import TransactionList from './TransactionList';
-import TransactionDetail from './TransactionDetail';
-import NewTxn from './NewTxn';
+import CategorySummaries from './CategorySummaries';
+import EditBudget from './EditBudget';
 import NavBar from './NavBar';
+import NewTxn from './NewTxn';
+import TransactionDetail from './TransactionDetail';
+import TransactionList from './TransactionList';
 import {
   BrowserRouter as Router,
   Routes,
@@ -22,6 +23,7 @@ function App() {
           <Route path="/" element={<CategorySummaries />} />
           <Route path="/categorydetail/:categoryId" element={<CategoryDetailHelper />} />
           <Route path="/txn/:txnID" element={<TransactionDetail />} />
+          <Route path="/budget/" element={<EditBudget />} />
         </Routes>
         <NavBar />
       </Router>
