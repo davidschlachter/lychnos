@@ -8,7 +8,7 @@ import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import Menu from '@mui/material/Menu';
 import MenuIcon from '@mui/icons-material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function Header(props) {
     // Add future sub-menus items here as OR conditions
@@ -22,6 +22,7 @@ export default function Header(props) {
         setAnchorEl(null);
     };
 
+    let navigate = useNavigate();
 
     return (
         <Box sx={{ flexGrow: 1 }}>
@@ -32,8 +33,7 @@ export default function Header(props) {
                         edge="start"
                         color="inherit"
                         aria-label="back"
-                        to={props.back_location}
-                        component={Link}
+                        onClick={() => navigate(-1)}
                         style={{ "visibility": props.back_visibility }}
                     >
                         <ArrowBackIosNewIcon />

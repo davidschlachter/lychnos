@@ -50,7 +50,7 @@ class CategorySummaries extends React.Component {
         } else if (!isLoaded) {
             return (
                 <>
-                    <Header back_visibility="hidden" back_location="/" title="Category summaries" budgetedit={true}></Header>
+                    <Header back_visibility="hidden" title="Category summaries" budgetedit={true}></Header>
                     <Spinner />
                 </>
             );
@@ -67,7 +67,7 @@ class CategorySummaries extends React.Component {
 
             return (
                 <>
-                    <Header back_visibility="hidden" back_location="/" title="Category summaries" budgetedit={true}></Header>
+                    <Header back_visibility="hidden" title="Category summaries" budgetedit={true}></Header>
                     <Box sx={{ p: 2, mb: 6 }}>
                         <TableContainer component={Paper}>
                             <Table style={{ "width": "100%" }}>

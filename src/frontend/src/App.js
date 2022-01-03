@@ -19,6 +19,7 @@ function App() {
       <Router basename={'/app'}>
         <Routes>
           <Route path="/newTxn" element={<NewTxn />} />
+          <Route path="/txns/:categoryID" element={<TransactionList />} />
           <Route path="/txns" element={<TransactionList />} />
           <Route path="/" element={<CategorySummaries />} />
           <Route path="/categorydetail/:categoryId" element={<CategoryDetailHelper />} />

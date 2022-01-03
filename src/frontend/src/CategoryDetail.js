@@ -12,6 +12,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Typography from '@mui/material/Typography';
+import { Link } from 'react-router-dom';
 
 class CategoryDetail extends React.Component {
     constructor(props) {
@@ -49,7 +50,7 @@ class CategoryDetail extends React.Component {
         } else if (!isLoaded) {
             return (
                 <>
-                    <Header back_visibility="visible" back_location="/" title="Category details"></Header>
+                    <Header back_visibility="visible" title="Category details"></Header>
                     <Spinner />
                 </>
             );
@@ -67,7 +68,7 @@ class CategoryDetail extends React.Component {
             ));
             return (
                 <>
-                    <Header back_visibility="visible" back_location="/" title="Category details"></Header>
+                    <Header back_visibility="visible" title="Category details"></Header>
                     <Box sx={{ p: 2, mb: 6 }}>
                         <Typography variant="h6" component="div" align="center" gutterBottom>
                             {details[0].name}
@@ -90,7 +91,7 @@ class CategoryDetail extends React.Component {
                                 </TableHead>
                                 <TableBody>
                                     {details[0].totals.map(item => (
-                                        <TableRow key={item.start}>
+                                        <TableRow key={item.start} to={"/txns/" + details[0].id + "?start=" + new Date(item.start).toLocaleDateString('en-CA') + "&end" + new Date(item.end).toLocaleDateString('en-CA')} component={Link}>
                                             <TableCell>{Intl.DateTimeFormat('en', { month: 'long' }).format(new Date(item.start.replace("Z", "")))}</TableCell>
                                             <TableCell>{Math.round(parseFloat(item.earned) + parseFloat(item.spent))}</TableCell>
                                         </TableRow>
