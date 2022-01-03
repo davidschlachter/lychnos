@@ -1,3 +1,5 @@
+const red = '#ff5e00';
+
 function AmountLeft(props) {
     let timeSpent;
     if (props.timeSpent > 100) {
@@ -18,7 +20,7 @@ function AmountLeft(props) {
     let color = 'black'
     let sign = 1
     if (Math.sign(left) !== Math.sign(props.amount)) {
-        if (Math.abs(left) > 10) { color = 'red' }
+        if (Math.abs(left) > 10) { color = red }
         sign = -1
     }
 
