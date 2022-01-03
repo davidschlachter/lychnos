@@ -68,10 +68,10 @@ export default function TransactionList(props) {
             if (t.attributes.transactions[0].category_id !== categoryID.toString()) {
                 continue;
             }
-            txns.push(structuredClone(t));
+            txns.push(t);
         }
     } else {
-        txns = structuredClone(response);
+        txns = response;
     }
 
     return (
