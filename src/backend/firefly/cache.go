@@ -20,7 +20,7 @@ type Cache struct {
 	Accounts       []Account
 	Categories     []Category
 	CategoryTotals map[categoryTotalsKey][]CategoryTotal
-	Transactions   map[int][]Transactions
+	Transactions   map[transactionsKey][]Transactions
 	mu             sync.Mutex
 }
 
@@ -28,6 +28,12 @@ type categoryTotalsKey struct {
 	CategoryID int
 	Start      time.Time
 	End        time.Time
+}
+
+type transactionsKey struct {
+	Page  int
+	Start string
+	End   string
 }
 
 func (f *Firefly) CachedAccounts() ([]Account, error) {
@@ -154,36 +160,36 @@ func (f *Firefly) refreshCategoryTotals(key categoryTotalsKey) error {
 	return nil
 }
 
-func (f *Firefly) CachedTransactions(page int) ([]Transactions, error) {
+func (f *Firefly) CachedTransactions(key transactionsKey) ([]Transactions, error) {
 	f.cache.mu.Lock()
-	_, ok := f.cache.Transactions[page]
+	_, ok := f.cache.Transactions[key]
 	if !ok {
 		f.cache.mu.Unlock()
-		err := f.refreshTransactions(page)
+		err := f.refreshTransactions(key)
 		if err != nil {
 			return nil, err
 		}
 		f.cache.mu.Lock()
 	}
 	defer f.cache.mu.Unlock()
-	return f.cache.Transactions[page], nil
+	return f.cache.Transactions[key], nil
 }
 
 // refreshTransactions refreshes the cached Transactions. The caller is
 // responsible for locking the mutex.
-func (f *Firefly) refreshTransactions(page int) error {
+func (f *Firefly) refreshTransactions(key transactionsKey) error {
 	f.cache.mu.Lock()
 	if f.cache.Transactions == nil {
-		f.cache.Transactions = make(map[int][]Transactions)
+		f.cache.Transactions = make(map[transactionsKey][]Transactions)
 	}
 	f.cache.mu.Unlock()
-	t, err := f.ListTransactions(1)
+	t, err := f.ListTransactions(key)
 	if err != nil {
 		return err
 	}
 	f.cache.mu.Lock()
-	log.Printf("Updating Transactions cache")
-	f.cache.Transactions[page] = t
+	log.Printf("Updating Transactions cache for page %d, start %s, end %s", key.Page, key.Start, key.End)
+	f.cache.Transactions[key] = t
 	f.cache.mu.Unlock()
 	return nil
 }

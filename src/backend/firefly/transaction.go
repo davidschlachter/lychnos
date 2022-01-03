@@ -193,8 +193,8 @@ func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 		Start:      txnDate,
 		End:        txnDate,
 	}
-	f.refreshTransactions(1) // since user is going to txns page next, update now
-	go func() {              // we can update other caches after returning
+	f.refreshTransactions(transactionsKey{Page: 1}) // since user is going to txns page next, update now
+	go func() {                                     // we can update other caches after returning
 		f.refreshCategoryTxnCache(key)
 		_ = f.refreshAccounts()
 	}()
@@ -286,13 +286,32 @@ func (f *Firefly) calcTxnType(srcID, srcName, destID, destName string) string {
 }
 
 func (f *Firefly) listTxns(w http.ResponseWriter, req *http.Request) {
-	var page int
+	var (
+		page       int
+		start, end string
+	)
 	pageStr, ok := req.URL.Query()["page"]
 	if ok && len(pageStr) > 0 {
 		page, _ = strconv.Atoi(pageStr[0]) // if page cannot be parsed, we'll return page 1
 	}
 
-	txns, err := f.CachedTransactions(page)
+	startStr, ok := req.URL.Query()["start"]
+	if ok && len(startStr) > 0 {
+		start = startStr[0]
+	}
+
+	endStr, ok := req.URL.Query()["end"]
+	if ok && len(endStr) > 0 {
+		end = endStr[0]
+	}
+
+	key := transactionsKey{
+		Page:  page,
+		Start: start,
+		End:   end,
+	}
+
+	txns, err := f.CachedTransactions(key)
 	if err != nil {
 		httperror.Send(w, req, http.StatusInternalServerError, fmt.Sprintf("Could not list transactions: %s", err))
 		return
@@ -302,27 +321,44 @@ func (f *Firefly) listTxns(w http.ResponseWriter, req *http.Request) {
 	json.NewEncoder(w).Encode(txns)
 }
 
-func (f *Firefly) ListTransactions(page int) ([]Transactions, error) {
+func (f *Firefly) ListTransactions(key transactionsKey) ([]Transactions, error) {
 	const path = "/api/v1/transactions"
+	var (
+		page               int
+		results            []Transactions
+		params, dateParams string
+	)
 
-	if page == 0 {
+	if key.Start != "" && key.End != "" {
+		dateParams = fmt.Sprintf("start=%s&end=%s", key.Start, key.End)
 		page = 1
+	} else {
+		if key.Page == 0 {
+			key.Page = 1
+		}
+		page = key.Page
 	}
 
-	params := fmt.Sprintf("?page=%d", page)
-	req, _ := http.NewRequest("GET", f.url+path+params, nil)
-	req.Header.Add("Authorization", "Bearer "+f.token)
-	resp, err := f.client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch Transactions: %s", err)
+	for more := true; more; page++ {
+		if dateParams != "" {
+			params = fmt.Sprintf("page=%d&%s", page, dateParams)
+		} else {
+			params = fmt.Sprintf("page=%d", page)
+		}
+		req, _ := http.NewRequest("GET", f.url+path+"?"+params, nil)
+		req.Header.Add("Authorization", "Bearer "+f.token)
+		resp, err := f.client.Do(req)
+		if err != nil {
+			return nil, fmt.Errorf("failed to fetch Transactions: %s", err)
+		}
+		defer resp.Body.Close()
+
+		var txns txnsResponse
+		json.NewDecoder(resp.Body).Decode(&txns)
+
+		results = append(results, txns.Data...)
+		more = txns.Meta.Pagination.CurrentPage < txns.Meta.Pagination.TotalPages
 	}
-	defer resp.Body.Close()
-
-	var txns txnsResponse
-	json.NewDecoder(resp.Body).Decode(&txns)
-
-	var results []Transactions
-	results = append(results, txns.Data...)
 
 	return results, nil
 }

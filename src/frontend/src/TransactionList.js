@@ -14,7 +14,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { Link } from 'react-router-dom';
 
-export default function TransactionList() {
+export default function TransactionList(props) {
     const { response, error, loading } = useFetch(
         "/api/transactions",
         {
