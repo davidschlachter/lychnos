@@ -49,7 +49,7 @@ class CategoryDetail extends React.Component {
         } else if (!isLoaded) {
             return (
                 <>
-                    <Header back_visibility="visible" back_location="/" title="Category details"></Header>
+                    <Header back_visibility="visible" title="Category details"></Header>
                     <Spinner />
                 </>
             );
@@ -67,7 +67,7 @@ class CategoryDetail extends React.Component {
             ));
             return (
                 <>
-                    <Header back_visibility="visible" back_location="/" title="Category details"></Header>
+                    <Header back_visibility="visible" title="Category details"></Header>
                     <Box sx={{ p: 2, mb: 6 }}>
                         <Typography variant="h6" component="div" align="center" gutterBottom>
                             {details[0].name}

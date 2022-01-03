@@ -25,14 +25,14 @@ export default function EditBudget() {
     if (resp.loading === true) {
         return (
             <>
-                <Header back_visibility="visible" back_location="/" title="Edit budget"></Header>
+                <Header back_visibility="visible" title="Edit budget"></Header>
                 <Spinner />
             </>
         );
     } else {
         return (
             <>
-                <Header back_visibility="visible" back_location="/" title="Edit budget" budgetedit={false}></Header>
+                <Header back_visibility="visible" title="Edit budget" budgetedit={false}></Header>
                 <EditBudgetForm categorybudgets={resp.categorybudgets} categories={resp.categories} seed={resp.seedBudget} />
             </>
         );

@@ -28,7 +28,7 @@ export default function TransactionList(props) {
     if (loading) {
         return (
             <>
-                <Header back_visibility="hidden" back_location="/" title="Transactions"></Header>
+                <Header back_visibility="hidden" title="Transactions"></Header>
                 <Spinner />
             </>
 
@@ -43,7 +43,7 @@ export default function TransactionList(props) {
 
     return (
         <>
-            <Header back_visibility="hidden" back_location="/" title="Transactions"></Header>
+            <Header back_visibility="hidden" title="Transactions"></Header>
             <Box sx={{ mb: 6 }}>
                 <TableContainer>
                     <Table style={{ "width": "100%" }}>
