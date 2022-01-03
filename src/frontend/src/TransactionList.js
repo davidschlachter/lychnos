@@ -19,8 +19,8 @@ export default function TransactionList(props) {
         "/api/transactions",
         {
             query: {
-                page: 1,
-                pageSize: 100,
+                start: new Date(new Date().setDate(new Date().getDate() - 30)).toLocaleDateString('en-CA'),
+                end: new Date().toLocaleDateString('en-CA')
             },
         }
     );
