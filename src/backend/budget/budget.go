@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -29,6 +30,7 @@ func New(db *sql.DB) *Budgets {
 }
 
 func (b *Budgets) Handle(w http.ResponseWriter, req *http.Request) {
+	log.Printf("%s %s", req.Method, req.RequestURI)
 	switch req.Method {
 	case "GET":
 		hasID := regexp.MustCompile(`/[0-9]+$`)

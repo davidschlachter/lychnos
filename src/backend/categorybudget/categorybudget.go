@@ -34,6 +34,7 @@ func New(db *sql.DB, b *budget.Budgets) *CategoryBudgets {
 }
 
 func (c *CategoryBudgets) Handle(w http.ResponseWriter, req *http.Request) {
+	log.Printf("%s %s", req.Method, req.RequestURI)
 	switch req.Method {
 	case "GET":
 		hasID := regexp.MustCompile(`/[0-9]+$`)

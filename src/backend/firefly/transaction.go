@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -15,6 +16,7 @@ import (
 )
 
 func (f *Firefly) HandleTxn(w http.ResponseWriter, req *http.Request) {
+	log.Printf("%s %s", req.Method, req.RequestURI)
 	switch req.Method {
 	case "GET":
 		hasID := regexp.MustCompile(`/[0-9]+$`)
@@ -193,8 +195,8 @@ func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 		Start:      txnDate,
 		End:        txnDate,
 	}
-	f.refreshTransactions(transactionsKey{Page: 1}) // since user is going to txns page next, update now
-	go func() {                                     // we can update other caches after returning
+	f.invalidateTransactionsCache() // since user is going to txns page next, update now
+	go func() {                     // we can update other caches after returning
 		f.refreshCategoryTxnCache(key)
 		_ = f.refreshAccounts()
 	}()

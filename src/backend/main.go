@@ -40,6 +40,7 @@ func main() {
 	http.HandleFunc("/api/reports/", r.Handle)
 
 	http.HandleFunc("/health", func(w http.ResponseWriter, req *http.Request) {
+		log.Printf("%s %s", req.Method, req.RequestURI)
 		fmt.Fprintf(w, "ok\n")
 	})
 
