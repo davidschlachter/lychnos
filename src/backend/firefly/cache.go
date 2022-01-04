@@ -57,7 +57,7 @@ func (f *Firefly) refreshAccounts() error {
 	}
 	f.cache.mu.Lock()
 	defer f.cache.mu.Unlock()
-	log.Printf("Updating Accounts cache")
+	log.Printf("Cache: updating Accounts")
 	f.cache.Accounts = c
 	return nil
 }
@@ -85,7 +85,7 @@ func (f *Firefly) refreshCategories() error {
 	}
 	f.cache.mu.Lock()
 	defer f.cache.mu.Unlock()
-	log.Printf("Updating Categories cache")
+	log.Printf("Cache: updating Categories")
 	f.cache.Categories = c
 	return nil
 }
@@ -154,7 +154,7 @@ func (f *Firefly) refreshCategoryTotals(key categoryTotalsKey) error {
 		return fmt.Errorf("got 0 category totals, wanted at least one for key %d, %s, %s", key.CategoryID, key.Start, key.End)
 	}
 	f.cache.mu.Lock()
-	log.Printf("Updating CategoryTotals cache for: %d, %s, %s", key.CategoryID, key.Start, key.End)
+	log.Printf("Cache: updating CategoryTotals for key %d, %s, %s", key.CategoryID, key.Start, key.End)
 	f.cache.CategoryTotals[key] = c
 	f.cache.mu.Unlock()
 	return nil
@@ -175,8 +175,15 @@ func (f *Firefly) CachedTransactions(key transactionsKey) ([]Transactions, error
 	return f.cache.Transactions[key], nil
 }
 
-// refreshTransactions refreshes the cached Transactions. The caller is
-// responsible for locking the mutex.
+// invalidateTransactionsCache will invalidate all cached transactions
+// lists
+func (f *Firefly) invalidateTransactionsCache() {
+	f.cache.mu.Lock()
+	defer f.cache.mu.Unlock()
+	log.Print("Cache: clearing Transactions")
+	f.cache.Transactions = nil
+}
+
 func (f *Firefly) refreshTransactions(key transactionsKey) error {
 	f.cache.mu.Lock()
 	if f.cache.Transactions == nil {
@@ -188,7 +195,7 @@ func (f *Firefly) refreshTransactions(key transactionsKey) error {
 		return err
 	}
 	f.cache.mu.Lock()
-	log.Printf("Updating Transactions cache for page %d, start %s, end %s", key.Page, key.Start, key.End)
+	log.Printf("Cache: updating Transactions for key %d, %s, %s", key.Page, key.Start, key.End)
 	f.cache.Transactions[key] = t
 	f.cache.mu.Unlock()
 	return nil
@@ -251,7 +258,7 @@ func (f *Firefly) refreshCategoryTxnCache(tgt categoryTotalsKey) {
 	for k := range f.cache.CategoryTotals {
 		if (k.Start.Year() == tgt.Start.Year() && (k.CategoryID == 0 || k.CategoryID == tgt.CategoryID)) ||
 			(k.End.Year() == tgt.End.Year() && (k.CategoryID == 0 || k.CategoryID == tgt.CategoryID)) {
-			log.Printf("Clearing CategoryTotals cache for: %d, %s, %s", k.CategoryID, k.Start, k.End)
+			log.Printf("Cache: clearing CategoryTotals for key %d, %s, %s", k.CategoryID, k.Start, k.End)
 			delete(f.cache.CategoryTotals, k)
 			go func(k categoryTotalsKey) {
 				f.refreshCategoryTotals(k)

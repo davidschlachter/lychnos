@@ -3,6 +3,7 @@ package report
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -35,6 +36,7 @@ func New(f *firefly.Firefly, c *categorybudget.CategoryBudgets, b *budget.Budget
 }
 
 func (r *Reports) Handle(w http.ResponseWriter, req *http.Request) {
+	log.Printf("%s %s", req.Method, req.RequestURI)
 	switch req.Method {
 	case "GET":
 		if strings.Contains(req.URL.Path, "/categorysummary/") {

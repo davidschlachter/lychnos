@@ -3,6 +3,7 @@ package firefly
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -22,6 +23,7 @@ type rawCategory struct {
 }
 
 func (f *Firefly) HandleCategory(w http.ResponseWriter, req *http.Request) {
+	log.Printf("%s %s", req.Method, req.RequestURI)
 	switch req.Method {
 	case "GET":
 		f.listCategories(w, req)

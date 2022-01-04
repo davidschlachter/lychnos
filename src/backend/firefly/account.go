@@ -3,6 +3,7 @@ package firefly
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"regexp"
 
@@ -29,6 +30,7 @@ type AccountAttributes struct {
 }
 
 func (f *Firefly) HandleAccount(w http.ResponseWriter, req *http.Request) {
+	log.Printf("%s %s", req.Method, req.RequestURI)
 	switch req.Method {
 	case "GET":
 		hasID := regexp.MustCompile(`/[0-9]+$`)
