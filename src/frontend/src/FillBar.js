@@ -7,11 +7,24 @@ const red = '#ff5e00';
 function FillBar(props) {
     let width = props.sum / props.amount * 100
     let color = green;
-    if (width > 100) {
+    if ((props.sum < 0 && props.amount > 0) || (props.sum > 0 && props.amount < 0)) {
+        width = 100;         // Bar width is meaningless if sign(sum) != sign(amount)
+        if (props.sum < 0) { // Expected net positive, currently net negative
+            color = red;
+        } else {             // Expected net negative, currently net positive
+            color = green;
+        }
+    } else if (width > 100) { // Category is beyond budget
         width = 100;
-        color = red;
-    } else if (Math.abs(props.sum / props.amount) > ((1 / 12) + (props.now / 100))) {
-        color = yellow;
+        if (props.sum > 0) {  // Good for income
+            color = green;
+        } else {              // Bad for expenses
+            color = red;
+        }
+    } else if (props.amount < 0 && Math.abs(props.sum / props.amount) > ((1 / 12) + (props.now / 100))) {
+        color = yellow;       // Expense target is running beyond target
+    } else if (props.amount > 0 && Math.abs(props.sum / props.amount) < ((props.now / 100) - (3 / 12))) {
+        color = yellow;       // Income category is running behind target (more generous here, accommodate seasonal work)
     }
     let style = {
         'width': String(width) + "%",
