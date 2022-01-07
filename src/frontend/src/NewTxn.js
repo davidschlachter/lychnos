@@ -47,7 +47,7 @@ export default function NewTxn() {
                         required
                         id="amount"
                         name="amount"
-                        inputProps={{ inputMode: 'numeric', pattern: '[0-9.]*' }}
+                        inputProps={{ inputMode: 'decimal', pattern: '[0-9.,]*' }}
                         label="Amount"
                         variant="outlined"
                         align="center"
