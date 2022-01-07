@@ -75,7 +75,7 @@ export default function EditBudget(props) {
 
     return (
         <>
-            <Box sx={{ p: 2, mb: 6 }}>
+            <Box sx={{ p: 2, pb: 8 }}>
                 <Typography variant="subtitle1" component="div" align="center" gutterBottom>
                     Income: ${sums.income}, Expenses: ${sums.expenses}<br />
                     Net: ${sums.net}

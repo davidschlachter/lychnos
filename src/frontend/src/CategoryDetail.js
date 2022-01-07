@@ -69,7 +69,7 @@ class CategoryDetail extends React.Component {
             return (
                 <>
                     <Header back_visibility="visible" title="Category details"></Header>
-                    <Box sx={{ p: 2, mb: 6 }}>
+                    <Box sx={{ p: 2, pb: 8 }}>
                         <Typography variant="h6" component="div" align="center" gutterBottom>
                             {details[0].name}
                         </Typography>

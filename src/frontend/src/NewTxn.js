@@ -20,7 +20,7 @@ export default function NewTxn() {
     return (
         <>
             <Header back_visibility="hidden" title="New transaction"></Header>
-            <Box sx={{ p: 2, mb: 6 }} component="form" action="/api/transactions/" method="POST" onSubmit={handleClick} >
+            <Box sx={{ p: 2, pb: 8 }} component="form" action="/api/transactions/" method="POST" onSubmit={handleClick} >
                 <Stack direction="column">
                     <TextField
                         required

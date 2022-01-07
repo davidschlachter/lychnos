@@ -34,7 +34,7 @@ export default function TransactionDetail() {
     return (
         <>
             <Header back_visibility="visible" title="Transaction details"></Header>
-            <Box sx={{ p: 2, mb: 6 }}>
+            <Box sx={{ p: 2, pb: 8 }}>
                 <Typography variant="h6" component="div" align="center" gutterBottom>
                     {response.attributes.transactions[0].description}
                 </Typography>
