@@ -73,7 +73,26 @@ func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// Build the transaction struct
-	amt, err := decimal.NewFromString(req.Form.Get("amount"))
+	// The amount may use a period or a comma as the decimal separator.
+	var nPer, nCom, posSep int
+	amtStr := req.Form.Get("amount")
+	for i, c := range amtStr { // Assume no multibyte characters
+		if c == '.' {
+			nPer++
+			posSep = i
+		} else if c == ',' {
+			nCom++
+			posSep = i
+		}
+	}
+	if nPer > 0 && nCom > 0 {
+		httperror.Send(w, req, http.StatusInternalServerError, fmt.Sprintf("Could not parse amount. More than one decimal separator provided in: %s", amtStr))
+		return
+	}
+	if nCom == 1 {
+		amtStr = amtStr[:posSep] + "." + amtStr[posSep+1:]
+	}
+	amt, err := decimal.NewFromString(amtStr)
 	if err != nil {
 		httperror.Send(w, req, http.StatusInternalServerError, fmt.Sprintf("Could not parse amount: %s", req.Form.Get("amount")))
 		return

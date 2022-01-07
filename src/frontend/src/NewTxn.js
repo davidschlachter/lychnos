@@ -20,7 +20,7 @@ export default function NewTxn() {
     return (
         <>
             <Header back_visibility="hidden" title="New transaction"></Header>
-            <Box sx={{ p: 2, mb: 6 }} component="form" action="/api/transactions/" method="POST" onSubmit={handleClick} >
+            <Box sx={{ p: 2, pb: 8 }} component="form" action="/api/transactions/" method="POST" onSubmit={handleClick} >
                 <Stack direction="column">
                     <TextField
                         required
@@ -47,7 +47,7 @@ export default function NewTxn() {
                         required
                         id="amount"
                         name="amount"
-                        inputProps={{ inputMode: 'numeric', pattern: '[0-9.]*' }}
+                        inputProps={{ inputMode: 'decimal', pattern: '[0-9.,]*' }}
                         label="Amount"
                         variant="outlined"
                         align="center"

@@ -77,14 +77,14 @@ export default function TransactionList(props) {
     return (
         <>
             <Header back_visibility={back_visibility} title="Transactions"></Header>
-            <Box sx={{ mb: 6 }}>
+            <Box sx={{ pb: 8 }}>
                 <TableContainer>
-                    <Table style={{ "width": "100%" }}>
+                    <Table className="txnList" style={{ "width": "100%" }}>
                         <TableHead>
                             <TableRow>
                                 <TableCell>Description</TableCell>
-                                <TableCell>Amount</TableCell>
-                                <TableCell>From</TableCell>
+                                <TableCell className="txnListAmount">Amount</TableCell>
+                                <TableCell className="txnListFrom">From</TableCell>
                                 <TableCell>To</TableCell>
                                 <TableCell>Date</TableCell>
                             </TableRow>
