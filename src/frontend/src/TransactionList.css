@@ -1,14 +1,23 @@
 @media only screen and (max-width: 800px) {
-    .srcName {
+    .txnList .srcName {
         display: none;
     }
 
-    td:nth-child(5) {
+    .txnList td:nth-child(5) {
         display: none;
     }
 
-    th:nth-child(5) {
+    .txnList th:nth-child(5) {
         display: none;
+    }
+    .txnList {
+        table-layout: fixed;
+    }
+    .txnListFrom {
+	width: 2.5em;
+    }
+    .txnListAmount {
+        width: 3.7em;
     }
 }
 
