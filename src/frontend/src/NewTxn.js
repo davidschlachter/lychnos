@@ -43,6 +43,7 @@ export default function NewTxn() {
                         margin="normal"
                         defaultValue={now.toLocaleDateString('en-CA')}
                     />
+                    <CategoriesInput name="category_name" label="Category" />
                     <TextField
                         required
                         id="amount"
@@ -54,7 +55,6 @@ export default function NewTxn() {
                         margin="normal"
                         autoComplete="off"
                     />
-                    <CategoriesInput name="category_name" label="Category" />
                     <LoadingButton
                         variant="contained"
                         name="submitButton"
