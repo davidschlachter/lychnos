@@ -2,6 +2,10 @@
 
 Use [Firefly III](https://github.com/firefly-iii/firefly-iii) to store transactions, but implement my own budgeting system. Goal: have a single app for recording and reporting, instead of using Firefly and an Excel spreadsheet.
 
+## Screenshots
+
+![Category summary](docs/category-summary.png) ![Transactions list](docs/transactions-list.png) ![New transaction](docs/new-transaction.png)
+
 ## Installation
 
 You'll need to create a database and user for `lychnos`. I'm using MySQL:
@@ -32,17 +36,3 @@ location /api/ {
 	proxy_pass http://192.168.72.221:8080;
 }
 ```
-
-## Screenshots
-
-### Category summary
-
-![Category summary](docs/category-summary.png)
-
-### Transactions list
-
-![Transactions list](docs/transactions-list.png)
-
-### New transaction
-
-![New transaction](docs/new-transaction.png)
