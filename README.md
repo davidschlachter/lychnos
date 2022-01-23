@@ -37,12 +37,12 @@ location /api/ {
 
 ### Category summary
 
-[Category summary](docs/category-summary.png)
+![Category summary](docs/category-summary.png)
 
 ### Transactions list
 
-[Transactions list](docs/transactions-list.png)
+![Transactions list](docs/transactions-list.png)
 
 ### New transaction
 
-[New transaction](docs/new-transaction.png)
+![New transaction](docs/new-transaction.png)
