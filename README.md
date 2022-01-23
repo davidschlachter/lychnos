@@ -17,4 +17,32 @@ Then, copy `.env.sample` in `src/backend` to `.env` and update the database conn
 
 ## Deployment
 
-I put the backend behind an nginx reverse proxy for the `/api` path, and put the React frontend into `/app` (served statically with nginx) on the same domain.
+I put the backend behind an nginx reverse proxy for the `/api` path, and serve the React frontend under `/app` (statically with nginx) on the same domain.
+
+Relevant excerpt from my nginx config:
+
+```
+location /app/ {
+	# React build served statically
+	proxy_pass http://192.168.72.221:80/;
+}
+location /api/ {
+	# Go service, listening on port 8080
+	# Important: don't keep a trailing path slash on proxy path (prevent /api/api)
+	proxy_pass http://192.168.72.221:8080;
+}
+```
+
+## Screenshots
+
+### Category summary
+
+[Category summary](docs/category-summary.png)
+
+### Transactions list
+
+[Transactions list](docs/transactions-list.png)
+
+### New transaction
+
+[New transaction](docs/new-transaction.png)
