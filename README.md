@@ -4,7 +4,7 @@ Use [Firefly III](https://github.com/firefly-iii/firefly-iii) to store transacti
 
 ## Screenshots
 
-![Category summary](docs/category-summary.png) ![Transactions list](docs/transactions-list.png) ![New transaction](docs/new-transaction.png)
+<img alt="Category summary" src="docs/category-summary.png" width="375"/> <img alt="Transactions list" src="docs/transactions-list.png" width="375" /> <img alt="New transaction" src="docs/new-transaction.png" width="375" />
 
 ## Installation
 
