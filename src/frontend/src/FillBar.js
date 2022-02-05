@@ -7,14 +7,13 @@ const red = '#ff5e00';
 function FillBar(props) {
     let width = props.sum / props.amount * 100
     let color = green;
-    if ((props.sum < 0 && props.amount > 0) || (props.sum > 0 && props.amount < 0)) {
-        width = 100;         // Bar width is meaningless if sign(sum) != sign(amount)
-        if (props.sum < 0) { // Expected net positive, currently net negative
-            color = red;
-        } else {             // Expected net negative, currently net positive
-            color = green;
-        }
-    } else if (width > 100) { // Category is beyond budget
+    if (props.sum < 0 && props.amount > 0) {
+        width = 100;          // Bar width is meaningless if sign(sum) != sign(amount)
+        color = red;          // Expected net positive, currently net negative.
+
+    } else if (props.sum > 0 && props.amount < 0) {
+        width = 0;            // Expected net negative, currently net positive.
+    } else if (width > 100) { // Category is beyond budget (but has expected sign)
         width = 100;
         if (props.sum > 0) {  // Good for income
             color = green;
