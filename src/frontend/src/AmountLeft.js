@@ -1,6 +1,10 @@
+import { useTheme } from '@mui/material/styles';
+
 const red = '#ff5e00';
 
 function AmountLeft(props) {
+    const theme = useTheme();
+
     let timeSpent;
     if (props.timeSpent > 100) {
         timeSpent = 100;
@@ -17,7 +21,7 @@ function AmountLeft(props) {
             left = 1;
         }
     }
-    let color = 'black'
+    let color = theme.palette.text.primary
     let sign = 1
     if (Math.sign(left) !== Math.sign(props.amount)) {
         if (Math.abs(left) > 10) { color = red }

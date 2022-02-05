@@ -1,8 +1,11 @@
 import './FillBar.css';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 const green = '#a2ff00';
 const yellow = '#ffdd00';
 const red = '#ff5e00';
+const lightBackground = '#e3f2fd';
+const darkBackground = '#42484d';
 
 function FillBar(props) {
     let width = props.sum / props.amount * 100
@@ -25,6 +28,12 @@ function FillBar(props) {
     } else if (props.amount > 0 && Math.abs(props.sum / props.amount) < ((props.now / 100) - (3 / 12))) {
         color = yellow;       // Income category is running behind target (more generous here, accommodate seasonal work)
     }
+
+
+    let background;
+    const isDarkModeEnabled = useMediaQuery('(prefers-color-scheme: dark)');
+    background = (isDarkModeEnabled ? darkBackground : lightBackground);
+
     let style = {
         'width': String(width) + "%",
         'backgroundColor': color
@@ -40,7 +49,9 @@ function FillBar(props) {
     }
 
     return (
-        <div className="fillBar">
+        <div className="fillBar" style={{
+            "backgroundColor": background
+        }}>
             <div className="filled" style={style}></div>
             <div className="nowLine" style={nowStyle}></div>
         </div>
