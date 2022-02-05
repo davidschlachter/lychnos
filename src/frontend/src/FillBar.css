@@ -1,7 +1,6 @@
 .fillBar {
     width: calc(100% - 2px);
     height: 2em;
-    background-color: #e3f2fd;
 }
 
 .filled {
