@@ -77,7 +77,7 @@ export default function TransactionList(props) {
     return (
         <>
             <Header back_visibility={back_visibility} title="Transactions"></Header>
-            <Box sx={{ pb: 8 }} style={{ "overflow-y": "hidden" }}>
+            <Box sx={{ pb: 8 }}>
                 <TableContainer>
                     <Table className="txnList" style={{ "width": "100%" }}>
                         <TableHead>
