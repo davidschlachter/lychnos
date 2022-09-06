@@ -8,20 +8,13 @@ Use [Firefly III](https://github.com/firefly-iii/firefly-iii) to store transacti
 
 ## Installation
 
-You'll need to create a database and user for `lychnos`. I'm using MySQL:
+You can run `lychnos` with SQLite or MySQL/MariaDB. Configure your database connection string in `.env`. If no connection string is provided, a SQLite database will be created in the working directory.
 
-```mysql
-CREATE USER 'lychnos_user'@'localhost' IDENTIFIED BY 'password';
-CREATE DATABASE lychnos_db;
-GRANT ALL PRIVILEGES ON lychnos_db.* TO 'lychnos_user'@'localhost';
-FLUSH PRIVILEGES;
-```
-
-Then, copy `.env.sample` in `src/backend` to `.env` and update the database connection string. Be sure to load the environment variables from `.env` before starting `lychnos`. The easiest way to start the backend is to `go run .` in `src/backend`. Since the application does not provide authentication, a reverse proxy should provide access control.
+Be sure to load the environment variables from `.env` before starting `lychnos`. The easiest way to start the backend is to `go run .` in `src/backend`. Since the application does not provide authentication, a reverse proxy should provide access control.
 
 ## Deployment
 
-I put the backend behind an nginx reverse proxy for the `/api` path, and serve the React frontend under `/app` (statically with nginx) on the same domain.
+I put the backend behind an nginx reverse proxy for the `/api` path, and serve the React frontend under `/app` (statically with nginx) on the same domain. You'll want both to be on the same host so that you don't have trouble with CORS.
 
 Relevant excerpt from my nginx config:
 

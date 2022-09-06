@@ -6,4 +6,7 @@ require github.com/go-sql-driver/mysql v1.6.0
 
 require github.com/DATA-DOG/go-sqlmock v1.5.0
 
-require github.com/shopspring/decimal v1.3.1
+require (
+	github.com/mattn/go-sqlite3 v1.14.15
+	github.com/shopspring/decimal v1.3.1
+)

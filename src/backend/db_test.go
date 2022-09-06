@@ -16,7 +16,7 @@ func TestSetupDB(t *testing.T) {
 	mock.ExpectExec(`CREATE TABLE IF NOT EXISTS budgets.*`).WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectExec(`CREATE TABLE IF NOT EXISTS category_budgets.*`).WillReturnResult(sqlmock.NewResult(1, 1))
 
-	setupDB(db)
+	setupDB(nil, db)
 
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)

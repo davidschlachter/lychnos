@@ -14,10 +14,18 @@ import (
 )
 
 func main() {
-	db := connect()
-	setupDB(db)
+	db, err := connect()
+	if err != nil {
+		fmt.Printf("Failed to initialize database: %s\n", err)
+		os.Exit(1)
+	}
+	defer db.Close()
 
-	f, err := firefly.New(&http.Client{Timeout: time.Second * 30}, os.Getenv("FIREFLY_TOKEN"), os.Getenv("FIREFLY_URL"))
+	f, err := firefly.New(
+		&http.Client{Timeout: time.Second * 30},
+		os.Getenv("FIREFLY_TOKEN"),
+		os.Getenv("FIREFLY_URL"),
+	)
 	if err != nil {
 		fmt.Printf("Could not initialize Firefly-III client: %s\n", err)
 		os.Exit(1)
