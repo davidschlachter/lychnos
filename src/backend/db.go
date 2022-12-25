@@ -18,7 +18,7 @@ const (
 )
 
 var connectionTypeStrings = [...]string{
-	connectionTypeSQLite: "sqlite",
+	connectionTypeSQLite: "sqlite3",
 	connectionTypeMySQL:  "mysql",
 }
 
