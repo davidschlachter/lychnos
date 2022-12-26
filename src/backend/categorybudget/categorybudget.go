@@ -3,6 +3,7 @@ package categorybudget
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -43,14 +44,7 @@ func (c *CategoryBudgets) Handle(w http.ResponseWriter, req *http.Request) {
 			c.list(w, req)
 		}
 	case "POST":
-		// Support multiple creates if the request type is application/json,
-		// otherwise, assume an application/x-www-form-urlencoded request to
-		// POST a single categorybudget.
-		if req.Header.Get("Content-type") == "application/json" {
-			c.upsertMultiple(w, req)
-		} else {
-			c.upsertSingle(w, req)
-		}
+		c.upsert(w, req)
 
 	case "DELETE":
 		c.delete(w, req)
@@ -207,70 +201,9 @@ func (c *CategoryBudgets) delete(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (c *CategoryBudgets) upsertSingle(w http.ResponseWriter, req *http.Request) {
-	const (
-		q = "INSERT INTO category_budgets (id, budget, category, amount) VALUES(?, ?, ?, ?) ON DUPLICATE KEY UPDATE budget=VALUES(budget), category=VALUES(category), amount=VALUES(amount);"
-	)
-
-	var (
-		err                  error
-		id, budget, category int
-		amount               decimal.Decimal
-	)
-
-	err = req.ParseForm()
-	if err != nil {
-		httperror.Send(w, req, http.StatusInternalServerError, "Could not parse POST data")
-		return
-	}
-
-	idStr := req.Form.Get("id")
-	if len(idStr) == 0 {
-		id = 0
-	} else {
-		id, err = strconv.Atoi(idStr)
-		if err != nil {
-			httperror.Send(w, req, http.StatusBadRequest, fmt.Sprintf("Could not parse ID: %s\n", idStr))
-			return
-		}
-	}
-	budgetStr := req.Form.Get("budget")
-	budget, err = strconv.Atoi(budgetStr)
-	if err != nil {
-		httperror.Send(w, req, http.StatusBadRequest, fmt.Sprintf("Could not parse budget ID: %s\n", budgetStr))
-		return
-	}
-	categoryStr := req.Form.Get("category")
-	category, err = strconv.Atoi(categoryStr)
-	if err != nil {
-		httperror.Send(w, req, http.StatusBadRequest, fmt.Sprintf("Could not parse category ID: %s\n", categoryStr))
-		return
-	}
-	amountStr := req.Form.Get("amount")
-	amount, err = decimal.NewFromString(amountStr)
-	if err != nil {
-		httperror.Send(w, req, http.StatusBadRequest, fmt.Sprintf("Could not parse amount: %s\n", amountStr))
-		return
-	}
-
-	// TODO(davidschlachter): check that the new categorybudget has a valid
-	// budget and category ID
-
-	// TODO(davidschlachter): check that we have at most one categorybudget for
-	// each category in a budget
-
-	_, err = c.db.Exec(q, id, budget, category, amount)
-	if err != nil {
-		httperror.Send(w, req, http.StatusInternalServerError, fmt.Sprintf("Could not upsert categorybudget: %s", err))
-		return
-	}
-
-	w.WriteHeader(http.StatusCreated)
-}
-
-// upsertMultiple will remove all CategoryBudgets for the current Budget,
+// upsert will remove all CategoryBudgets for the current Budget,
 // replacing them with the provided CategoryBudgets.
-func (c *CategoryBudgets) upsertMultiple(w http.ResponseWriter, req *http.Request) {
+func (c *CategoryBudgets) upsert(w http.ResponseWriter, req *http.Request) {
 	const (
 		q_create = "INSERT INTO category_budgets (budget, category, amount) VALUES(?, ?, ?);"
 		q_delete = "DELETE FROM category_budgets WHERE id = ?;"
@@ -328,7 +261,7 @@ func (c *CategoryBudgets) upsertMultiple(w http.ResponseWriter, req *http.Reques
 
 	// upsertMultiple replaces all categoryBudgets for the budget. Delete before inserting.
 	previous, err := c.List()
-	if err != nil {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		httperror.Send(w, req, http.StatusInternalServerError, fmt.Sprintf("Could not list previous category budgets: %s", err))
 		return
 	}
