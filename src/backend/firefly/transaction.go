@@ -374,6 +374,10 @@ func (f *Firefly) ListTransactions(key transactionsKey) ([]Transactions, error) 
 		}
 		defer resp.Body.Close()
 
+		if resp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("got status %d", resp.StatusCode)
+		}
+
 		var txns txnsResponse
 		json.NewDecoder(resp.Body).Decode(&txns)
 
@@ -411,6 +415,10 @@ func (f *Firefly) FetchTransaction(id string) (*Transactions, error) {
 		return nil, fmt.Errorf("failed to fetch Transaction: %s", err)
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("got status %d", resp.StatusCode)
+	}
 
 	var result struct {
 		Data Transactions `json:"data"`

@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"regexp"
@@ -152,7 +151,7 @@ func (c *CategoryBudgets) list(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var result []CategoryBudget
+	result := make([]CategoryBudget, 0)
 	for _, cb := range categoryBudgets {
 		if cb.Budget == budget {
 			result = append(result, cb)
@@ -173,7 +172,7 @@ func (c *CategoryBudgets) List() ([]CategoryBudget, error) {
 	}
 	defer rows.Close()
 
-	var categoryBudgets []CategoryBudget
+	categoryBudgets := make([]CategoryBudget, 0)
 
 	for rows.Next() {
 		var catBgt CategoryBudget
@@ -297,14 +296,6 @@ func (c *CategoryBudgets) upsertMultiple(w http.ResponseWriter, req *http.Reques
 		return
 	}
 
-	bodyBytes, err := io.ReadAll(req.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-	bodyString := string(bodyBytes)
-	log.Printf("body: %s\n", bodyString)
-	log.Printf("cbs: %+v\n", cbs)
-
 	// All cb's in a request must refer to the same budget. If the budget is not
 	// provided, use the current one.
 	if cbs[0].Budget == 0 {
@@ -345,6 +336,7 @@ func (c *CategoryBudgets) upsertMultiple(w http.ResponseWriter, req *http.Reques
 		if p.Budget == budget {
 			_, err = tx.Exec(q_delete, p.ID)
 			if err != nil {
+				log.Printf("failed to delete CategoryBudget: %s", err)
 				httperror.Send(w, req, http.StatusInternalServerError, fmt.Sprintf("Could not delete previous category budget: %s", err))
 				return
 			}

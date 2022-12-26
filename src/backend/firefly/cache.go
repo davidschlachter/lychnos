@@ -151,7 +151,8 @@ func (f *Firefly) refreshCategoryTotals(key categoryTotalsKey) error {
 		return fmt.Errorf("got %d category totals, wanted 1 for key %d, %s, %s", len(c), key.CategoryID, key.Start, key.End)
 	}
 	if key.CategoryID == 0 && len(c) == 0 {
-		return fmt.Errorf("got 0 category totals, wanted at least one for key %d, %s, %s", key.CategoryID, key.Start, key.End)
+		// No category budgets exist.
+		return nil
 	}
 	f.cache.mu.Lock()
 	log.Printf("Cache: updating CategoryTotals for key %d, %s, %s", key.CategoryID, key.Start, key.End)
@@ -202,8 +203,14 @@ func (f *Firefly) refreshTransactions(key transactionsKey) error {
 }
 
 func (f *Firefly) RefreshCaches(c *categorybudget.CategoryBudgets, b *budget.Budgets) error {
-	f.refreshCategories()
-	f.refreshAccounts()
+	err := f.refreshCategories()
+	if err != nil {
+		return fmt.Errorf("failed to refresh categories: %s", err)
+	}
+	err = f.refreshAccounts()
+	if err != nil {
+		return fmt.Errorf("failed to refresh accounts: %s", err)
+	}
 
 	bs, err := b.List()
 	if err != nil {

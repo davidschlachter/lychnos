@@ -47,7 +47,10 @@ func (f *Firefly) listCategories(w http.ResponseWriter, req *http.Request) {
 func (f *Firefly) Categories() ([]Category, error) {
 	const path = "/api/v1/autocomplete/categories?limit=1000"
 
-	req, _ := http.NewRequest("GET", f.url+path, nil)
+	req, err := http.NewRequest("GET", f.url+path, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %s", err)
+	}
 	req.Header.Add("Authorization", "Bearer "+f.token)
 	resp, err := f.client.Do(req)
 	if err != nil {
@@ -55,10 +58,14 @@ func (f *Firefly) Categories() ([]Category, error) {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("got status %d", resp.StatusCode)
+	}
+
 	var rawResults []rawCategory
 	json.NewDecoder(resp.Body).Decode(&rawResults)
 
-	var results []Category
+	results := make([]Category, 0)
 
 	for _, r := range rawResults {
 		id, err := strconv.Atoi(r.ID)
@@ -106,6 +113,10 @@ func (f *Firefly) ListCategoryTotals(start, end time.Time) ([]CategoryTotal, err
 		return nil, fmt.Errorf("failed to fetch Categories: %s", err)
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("got status %d", resp.StatusCode)
+	}
 
 	var rawResults struct {
 		Data []rawCategoryTotal `json:"data"`
@@ -162,6 +173,10 @@ func (f *Firefly) FetchCategoryTotal(catID int, start, end time.Time) ([]Categor
 		return nil, fmt.Errorf("failed to fetch Category: %s", err)
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("got status %d", resp.StatusCode)
+	}
 
 	var rawResults struct {
 		Data rawCategoryTotal `json:"data"`

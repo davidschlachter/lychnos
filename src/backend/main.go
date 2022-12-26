@@ -16,20 +16,28 @@ import (
 func main() {
 	db, err := connect()
 	if err != nil {
-		fmt.Printf("Failed to initialize database: %s\n", err)
-		os.Exit(1)
+		log.Fatalf("Failed to initialize database: %s", err)
 	}
 	defer db.Close()
 
+	token := os.Getenv("FIREFLY_TOKEN")
+	if token == "" {
+		log.Fatal("Got empty FIREFLY_TOKEN, expected a value to be set.")
+	}
+	fireflyBase := os.Getenv("FIREFLY_URL")
+	if fireflyBase == "" {
+		log.Fatal("Got empty FIREFLY_URL, expected a value to be set.")
+	}
+
 	f, err := firefly.New(
 		&http.Client{Timeout: time.Second * 30},
-		os.Getenv("FIREFLY_TOKEN"),
-		os.Getenv("FIREFLY_URL"),
+		token,
+		fireflyBase,
 	)
 	if err != nil {
-		fmt.Printf("Could not initialize Firefly-III client: %s\n", err)
-		os.Exit(1)
+		log.Fatalf("Could not initialize Firefly-III client: %s", err)
 	}
+
 	http.HandleFunc("/api/transactions/", f.HandleTxn)
 	http.HandleFunc("/api/accounts/", f.HandleAccount)
 	http.HandleFunc("/api/categories/", f.HandleCategory)
@@ -52,7 +60,10 @@ func main() {
 		fmt.Fprintf(w, "ok\n")
 	})
 
-	f.RefreshCaches(c, b)
+	err = f.RefreshCaches(c, b)
+	if err != nil {
+		log.Fatalf("Failed to update caches: %s", err)
+	}
 
 	log.Println("Listening for connections...")
 	log.Fatal(http.ListenAndServe(":8080", nil))

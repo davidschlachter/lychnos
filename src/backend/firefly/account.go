@@ -94,6 +94,10 @@ func (f *Firefly) ListAccounts(accountType string) ([]Account, error) {
 		}
 		defer resp.Body.Close()
 
+		if resp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("got status %d", resp.StatusCode)
+		}
+
 		var accs accountsResponse
 		json.NewDecoder(resp.Body).Decode(&accs)
 
