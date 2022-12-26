@@ -269,9 +269,11 @@ func (c *CategoryBudgets) upsertSingle(w http.ResponseWriter, req *http.Request)
 	w.WriteHeader(http.StatusCreated)
 }
 
+// upsertMultiple will remove all CategoryBudgets for the current Budget,
+// replacing them with the provided CategoryBudgets.
 func (c *CategoryBudgets) upsertMultiple(w http.ResponseWriter, req *http.Request) {
 	const (
-		q_create = "INSERT INTO category_budgets (id, budget, category, amount) VALUES(?, ?, ?, ?) ON DUPLICATE KEY UPDATE budget=VALUES(budget), category=VALUES(category), amount=VALUES(amount);"
+		q_create = "INSERT INTO category_budgets (budget, category, amount) VALUES(?, ?, ?);"
 		q_delete = "DELETE FROM category_budgets WHERE id = ?;"
 	)
 
@@ -366,8 +368,9 @@ func (c *CategoryBudgets) upsertMultiple(w http.ResponseWriter, req *http.Reques
 		if cb.Amount.IsZero() {
 			continue // skip empty category budgets
 		}
-		_, err = tx.Exec(q_create, cb.ID, budget, cb.Category, cb.Amount)
+		_, err = tx.Exec(q_create, budget, cb.Category, cb.Amount)
 		if err != nil {
+			log.Printf("failed to upsert CategoryBudget: %s", err)
 			httperror.Send(w, req, http.StatusInternalServerError, fmt.Sprintf("Could not upsert categorybudget: %s", err))
 			return
 		}
