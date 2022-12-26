@@ -8,17 +8,17 @@ Use [Firefly III](https://github.com/firefly-iii/firefly-iii) to store transacti
 
 ## Local development
 
-Make sure you have a working installation of `firefly-iii`.
+Make sure you have a working installation of `firefly-iii`. In `src/backend`, copy `.env.sample` to `.env` and update the `firefly-iii` API key and base URL. The database connection string is optional (if unspecified, a SQLite file will be created in `src/backend`).
 
-Set the `firefly-iii` API key and base URL environment variables (see src/backend/.env.sample), then start the backend server (listens on localhost:8080) with: `go run .`
-
-For the front-end, `npm install` in src/frontend/, then `npm run start`. The front-end will automatically proxy API requests to the backend.
+Then, simply `make -j2 dev`, which will start the backend and frontend and restart either if their source files are changed.
 
 ## Installation
 
 You can run `lychnos` with SQLite or MySQL/MariaDB. Configure your database connection string in `.env`. If no connection string is provided, a SQLite database will be created in the working directory.
 
 Be sure to load the environment variables from `.env` before starting `lychnos`. The easiest way to start the backend is to `go run .` in `src/backend`. Since the application does not provide authentication, a reverse proxy should provide access control.
+
+You can build the backend with `make backend` (`backend` binary in `src/backend`) and the frontend with `make frontend` (`build` folder in `src/frontend`).
 
 ## Deployment
 
