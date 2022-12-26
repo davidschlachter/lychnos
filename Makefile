@@ -18,6 +18,7 @@ dev: backend.watch frontend.watch
 clean:
 	rm src/backend/backend
 	rm src/backend/database.sqlite3
+	rm src/frontend/build
 	rm src/frontend/node_modules
 
 test:
