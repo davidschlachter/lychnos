@@ -19,7 +19,7 @@ func TestHandle(t *testing.T) {
 	}
 	defer db.Close()
 
-	mock.ExpectExec(`INSERT INTO budgets`).
+	mock.ExpectExec(`REPLACE INTO budgets`).
 		WithArgs(0, "2021-01-01 00:00:00", "2021-12-31 23:59:59", 0).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectQuery(`SELECT id, start, end, reporting_interval FROM budgets;`).
@@ -28,7 +28,7 @@ func TestHandle(t *testing.T) {
 	mock.ExpectQuery(`SELECT id, start, end, reporting_interval FROM budgets WHERE id`).
 		WillReturnRows(sqlmock.NewRows([]string{"id", "start", "end", "reporting_interval"}).
 			AddRow(1, "2021-01-01 00:00:00", "2021-12-31 23:59:59", 0))
-	mock.ExpectExec(`INSERT INTO budgets`).
+	mock.ExpectExec(`REPLACE INTO budgets`).
 		WithArgs(1, "2022-01-01 00:00:00", "2022-12-31 23:59:59", 0).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectExec(`DELETE FROM budgets WHERE id`).WithArgs(1).
