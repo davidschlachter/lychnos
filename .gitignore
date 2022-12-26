@@ -1,3 +1,4 @@
 src/backend/.env
 src/backend/database.sqlite3
 src/backend/backend
+src/frontend/build

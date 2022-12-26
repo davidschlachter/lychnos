@@ -5,7 +5,7 @@ backend.watch:
 	cd src/backend && go run github.com/cespare/reflex@latest -s -r '\.go$$' go run github.com/joho/godotenv/cmd/godotenv@latest go run .
 
 frontend: frontend.install
-	npm run build
+	cd src/frontend && npm run build
 
 frontend.install:
 	cd src/frontend && npm install
