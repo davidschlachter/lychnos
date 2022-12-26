@@ -54,9 +54,29 @@ class CategorySummaries extends React.Component {
                     <Spinner />
                 </>
             );
-        } else if (typeof summaries_data !== 'undefined' && "error" in summaries_data) {
-            return <div>Error: {summaries_data.error}</div>;
-        } else {
+        } else if (typeof summaries_data === 'object' &&
+            !Array.isArray(summaries_data) &&
+            summaries_data !== null && "error" in summaries_data) {
+            return (
+                <>
+                    <Header back_visibility="hidden" title="Category summaries" budgetedit={true}></Header>
+                    <Box sx={{ p: 2, pb: 8 }}>
+                        <div>Error: {summaries_data.error}</div>
+                        <div>If no budget could be found, please <a href="/budget/">create a budget for this year</a>.</div>
+                    </Box>
+                </>
+            );
+        } else if (summaries_data === null) {
+            return (
+                <>
+                    <Header back_visibility="hidden" title="Category summaries" budgetedit={true}></Header>
+                    <Box sx={{ p: 2, pb: 8 }}>
+                        <div>Error: no category summary data could be fetched.</div>
+                    </Box>
+                </>
+            );
+        }
+        else {
             let timeSpent = 0
             let start = new Date(summaries_data[0].start)
             let end = new Date(summaries_data[0].end)
