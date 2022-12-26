@@ -98,8 +98,11 @@ func (c *CategoryBudgets) Fetch(id string) ([]CategoryBudget, error) {
 // TODO(davidschlachter): allow filtering, e.g. by budget ID
 func (c *CategoryBudgets) list(w http.ResponseWriter, req *http.Request) {
 	// If a budget was not provided, fetch the current one.
-	var budget int
-	var err error
+	var (
+		budget      int
+		maxBudgetID int
+		err         error
+	)
 	budgetStr, ok := req.URL.Query()["budget"]
 	if !ok || len(budgetStr) == 0 {
 		bgts, err := c.b.List()
@@ -109,14 +112,28 @@ func (c *CategoryBudgets) list(w http.ResponseWriter, req *http.Request) {
 		}
 		now := time.Now()
 		for _, b := range bgts {
+			if b.ID > maxBudgetID {
+				maxBudgetID = b.ID
+			}
 			if now.After(b.Start) && now.Before(b.End) {
 				budget = b.ID
 				break
 			}
 		}
+		// If no budget exists, create one for the current year.
 		if budget == 0 {
-			httperror.Send(w, req, http.StatusBadRequest, "Could not identify a current budget for list of category budgets")
-			return
+			budget = maxBudgetID + 1
+			now := time.Now()
+			err = c.b.Upsert(
+				budget,
+				time.Date(now.Year(), time.January, 01, 0, 0, 0, 0, time.Local),
+				time.Date(now.Year(), time.December, 31, 0, 0, 0, 0, time.Local),
+				0,
+			)
+			if err != nil {
+				httperror.Send(w, req, http.StatusBadRequest, fmt.Sprintf("No budget existed, failed to create a new budget: %s", err))
+				return
+			}
 		}
 	} else if len(budgetStr) > 1 {
 		httperror.Send(w, req, http.StatusBadRequest, fmt.Sprintf("Got %d budget IDs, wanted 0 or 1", len(budgetStr)))
