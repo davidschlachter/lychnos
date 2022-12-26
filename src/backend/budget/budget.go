@@ -14,6 +14,8 @@ import (
 	"github.com/davidschlachter/lychnos/src/backend/httperror"
 )
 
+const dateFormat = "2006-01-02 15:04:05"
+
 type Budget struct {
 	ID                int       `json:"id"`
 	Start             time.Time `json:"start"`
@@ -114,11 +116,6 @@ func (b *Budgets) List() ([]Budget, error) {
 }
 
 func (b *Budgets) upsert(w http.ResponseWriter, req *http.Request) {
-	const (
-		q      = "INSERT INTO budgets (id, start, end, reporting_interval) VALUES(?, ?, ?, ?) ON DUPLICATE KEY UPDATE start=VALUES(start), end=VALUES(end), reporting_interval=VALUES(reporting_interval);"
-		format = "2006-01-02 15:04:05"
-	)
-
 	var (
 		err      error
 		interval int
@@ -162,12 +159,12 @@ func (b *Budgets) upsert(w http.ResponseWriter, req *http.Request) {
 	// Validate dates
 	// TODO(davidschlachter): if the client doesn't provide a time zone, these
 	// will be created in UTC, which will lead to unexpected behaviour.
-	start, err := time.Parse(format, startString)
+	start, err := time.Parse(dateFormat, startString)
 	if err != nil {
 		httperror.Send(w, req, http.StatusBadRequest, fmt.Sprintf("Could not parse start time: %s", err))
 		return
 	}
-	end, err := time.Parse(format, endString)
+	end, err := time.Parse(dateFormat, endString)
 	if err != nil {
 		httperror.Send(w, req, http.StatusBadRequest, fmt.Sprintf("Could not parse end time: %s", err))
 		return
@@ -181,13 +178,21 @@ func (b *Budgets) upsert(w http.ResponseWriter, req *http.Request) {
 	// date ranges of any other one
 
 	// Insert the budget into the database
-	_, err = b.db.Exec(q, id, start.Format(format), end.Format(format), interval)
+	err = b.Upsert(id, start, end, interval)
 	if err != nil {
 		httperror.Send(w, req, http.StatusBadRequest, fmt.Sprintf("Could not upsert budget: %s", err))
 		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
+}
+
+func (b *Budgets) Upsert(id int, start, end time.Time, interval int) error {
+	const q = "REPLACE INTO budgets (id, start, end, reporting_interval) VALUES(?, ?, ?, ?);"
+
+	// Insert the budget into the database
+	_, err := b.db.Exec(q, id, start.Format(dateFormat), end.Format(dateFormat), interval)
+	return err
 }
 
 func (b *Budgets) delete(w http.ResponseWriter, req *http.Request) {
