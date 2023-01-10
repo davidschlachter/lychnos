@@ -62,7 +62,7 @@ class CategorySummaries extends React.Component {
                     <Header back_visibility="hidden" title="Category summaries" budgetedit={true}></Header>
                     <Box sx={{ p: 2, pb: 8 }}>
                         <div>Error: {summaries_data.error}</div>
-                        <div>If no budget could be found, please <a href="/budget/">create a budget for this year</a>.</div>
+                        <div>If no budget could be found, please <a href="budget/">create a budget for this year</a>.</div>
                     </Box>
                 </>
             );
