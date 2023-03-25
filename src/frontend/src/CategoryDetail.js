@@ -91,7 +91,7 @@ class CategoryDetail extends React.Component {
                                 </TableHead>
                                 <TableBody>
                                     {details[0].totals.map(item => (
-                                        <TableRow key={item.start} to={"/txns/" + details[0].id + "?start=" + new Date(item.start).toLocaleDateString('en-CA') + "&end" + new Date(item.end).toLocaleDateString('en-CA')} component={Link}>
+                                        <TableRow key={item.start} to={"/txns/" + details[0].id + "?start=" + encodeURIComponent(new Date(item.start).toLocaleDateString('en-CA')) + "&end=" + encodeURIComponent(new Date(item.end).toLocaleDateString('en-CA'))} component={Link}>
                                             <TableCell>{Intl.DateTimeFormat('en', { month: 'long' }).format(new Date(item.start.replace("Z", "")))}</TableCell>
                                             <TableCell>{Math.round(parseFloat(item.earned) + parseFloat(item.spent))}</TableCell>
                                         </TableRow>
