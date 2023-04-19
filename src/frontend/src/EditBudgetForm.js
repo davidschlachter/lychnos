@@ -52,8 +52,8 @@ export default function EditBudget(props) {
     }
     function sumOnSign(sign) {
         let sum = 0.0;
-        for (const [id, amount] of Object.entries(budget)) {
-            if (Math.sign(amount) == sign) {
+        for (const [, amount] of Object.entries(budget)) {
+            if (Math.sign(amount) === sign) {
                 sum = parseFloat(sum) + parseFloat(amount);
             }
         }
@@ -61,7 +61,7 @@ export default function EditBudget(props) {
     }
     function sumAll() {
         let sum = 0;
-        for (const [id, amount] of Object.entries(budget)) {
+        for (const [, amount] of Object.entries(budget)) {
             sum = parseFloat(sum) + parseFloat(amount);
         }
         return sum;

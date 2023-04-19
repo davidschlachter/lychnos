@@ -14,7 +14,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 
-export default function TransactionList(props) {
+export default function TransactionList() {
     const { categoryID } = useParams();
     let back_visibility;
     if (typeof categoryID === 'undefined') {
@@ -23,7 +23,7 @@ export default function TransactionList(props) {
         back_visibility = "visible";
     }
 
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams] = useSearchParams();
     let start = searchParams.get("start");
     let end = searchParams.get("end");
 

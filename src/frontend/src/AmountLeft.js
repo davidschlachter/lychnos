@@ -13,12 +13,12 @@ function AmountLeft(props) {
     }
 
     let left;
-    if (timeSpent > 91.667 ) {
+    if (timeSpent > 91.667) {
         // From the last month onwards, don't keep increasing the amount with time.
         left = Math.round(props.amount - props.sum)
     } else {
         left = Math.round((props.amount - props.sum) / (12 * (1 - (timeSpent / 100))))
-        if (left == 0) {
+        if (left === 0) {
             left = 1;
         }
     }
