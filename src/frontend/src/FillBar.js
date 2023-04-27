@@ -25,8 +25,6 @@ function FillBar(props) {
         }
     } else if (props.amount < 0 && Math.abs(props.sum / props.amount) > ((1 / 12) + (props.now / 100))) {
         color = yellow;       // Expense target is running beyond target
-    } else if (props.amount > 0 && Math.abs(props.sum / props.amount) < ((props.now / 100) - (3 / 12))) {
-        color = yellow;       // Income category is running behind target (more generous here, accommodate seasonal work)
     }
 
 
