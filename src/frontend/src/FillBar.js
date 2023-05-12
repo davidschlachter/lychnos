@@ -32,23 +32,33 @@ function FillBar(props) {
     const isDarkModeEnabled = useMediaQuery('(prefers-color-scheme: dark)');
     background = (isDarkModeEnabled ? darkBackground : lightBackground);
 
+    // Size the bars according to the amount of money represented in them.
+    let height;
+    if (props.amount > 0) {
+        height = "2em";
+    } else {
+        height = Math.abs(props.amount * (56 / 15000));
+    }
+
     let style = {
         'width': String(width) + "%",
-        'backgroundColor': color
+        'backgroundColor': color,
+        'height': height
     }
 
     let nowStyle = {
         'left': String(props.now) + "%",
         'width': "2px",
-        'height': "2em",
         'position': "relative",
         'backgroundColor': 'black',
-        'top': "-2em"
+        'top': "-2em",
+        'height': height
     }
 
     return (
         <div className="fillBar" style={{
-            "backgroundColor": background
+            "backgroundColor": background,
+            "height": height
         }}>
             <div className="filled" style={style}></div>
             <div className="nowLine" style={nowStyle}></div>

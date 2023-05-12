@@ -1,9 +1,7 @@
 .fillBar {
     width: calc(100% - 2px);
-    height: 2em;
 }
 
 .filled {
     left: 0;
-    height: 2em;
 }
