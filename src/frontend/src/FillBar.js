@@ -35,9 +35,9 @@ function FillBar(props) {
     // Size the bars according to the amount of money represented in them.
     let height;
     if (props.amount > 0) {
-        height = "2em";
+        height = "28px";
     } else {
-        height = Math.abs(props.amount * (56 / 15000));
+        height = Math.abs(props.amount * (56 / 15000)) + "px";
     }
 
     let style = {
@@ -51,7 +51,7 @@ function FillBar(props) {
         'width': "2px",
         'position': "relative",
         'backgroundColor': 'black',
-        'top': "-2em",
+        'top': "-" + height,
         'height': height
     }
 
