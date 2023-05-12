@@ -83,7 +83,7 @@ class CategorySummaries extends React.Component {
             let now = new Date()
             timeSpent = (Math.abs(now - start) / Math.abs(end - start)) * 100
 
-            const summaries = [...summaries_data].sort((a, b) => (a.name > b.name ? 1 : -1));
+            const summaries = [...summaries_data].sort((a, b) => (+a.amount > +b.amount ? 1 : -1));
 
             return (
                 <>
