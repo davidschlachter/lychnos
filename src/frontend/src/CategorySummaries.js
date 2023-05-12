@@ -32,6 +32,8 @@ class CategorySummaries extends React.Component {
                     this.setState({
                         isLoaded: true,
                         summaries_data: result
+                    }, () => {
+                        this.handleScrollPosition();
                     });
                 },
                 (error) => {
@@ -41,6 +43,18 @@ class CategorySummaries extends React.Component {
                     });
                 }
             )
+    }
+
+    // Remember scroll position.
+    handleScrollPosition = () => {
+        const scrollPosition = sessionStorage.getItem("scrollPosition");
+        if (scrollPosition) {
+            window.scrollTo(0, parseInt(scrollPosition));
+            sessionStorage.removeItem("scrollPosition");
+        }
+    }
+    handleClick = () => {
+        sessionStorage.setItem("scrollPosition", window.pageYOffset);
     }
 
     render() {
@@ -100,7 +114,7 @@ class CategorySummaries extends React.Component {
                                 </TableHead>
                                 <TableBody>
                                     {summaries.map(item => (
-                                        <TableRow key={item.category_budget_id} to={"/categorydetail/" + item.category_budget_id} component={Link}>
+                                        <TableRow key={item.category_budget_id} to={"/categorydetail/" + item.category_budget_id} onClick={this.handleClick} component={Link}>
                                             <TableCell>{item.name}</TableCell>
                                             <TableCell width="99%"><FillBar amount={item.amount} sum={item.sum} now={timeSpent}></FillBar></TableCell>
                                             <TableCell style={{
