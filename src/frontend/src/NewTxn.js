@@ -41,7 +41,10 @@ export default function NewTxn() {
                         variant="outlined"
                         align="center"
                         margin="normal"
-                        defaultValue={now.toLocaleDateString('en-CA')}
+                        // en-CA is different between iOS Safari and every other
+                        // browser! However, fr-CA seems to always be
+                        // yyyy-mm-dd.
+                        defaultValue={now.toLocaleDateString('fr-CA')}
                     />
                     <CategoriesInput name="category_name" label="Category" />
                     <TextField
