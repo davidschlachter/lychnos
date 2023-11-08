@@ -66,6 +66,7 @@ class CategoryDetail extends React.Component {
             details[0].totals.map(item => (
                 totalSpent += Math.round(parseFloat(item.earned) + parseFloat(item.spent))
             ));
+            const actualLabel = totalSpent > 0 ? 'Earned so far' : 'Spent so far';
             return (
                 <>
                     <Header back_visibility="visible" title="Category details"></Header>
@@ -74,7 +75,7 @@ class CategoryDetail extends React.Component {
                             {details[0].name}
                         </Typography>
                         <Typography variant="subtitle1" component="div" align="center" gutterBottom>
-                            Budgeted: {details[0].amount}, Actual: {totalSpent}<br />
+                            Budgeted: {details[0].amount}, {actualLabel}: {totalSpent}<br />
                             Left per month: <AmountLeft amount={details[0].amount} sum={totalSpent} timeSpent={timeSpent} />
                         </Typography>
                         <div style={{ "width": "100%;" }}>
