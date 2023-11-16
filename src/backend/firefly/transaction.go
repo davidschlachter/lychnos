@@ -75,7 +75,7 @@ func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 	// Build the transaction struct
 	// The amount may use a period or a comma as the decimal separator.
 	var nPer, nCom, posSep int
-	amtStr := req.Form.Get("amount")
+	amtStr := strings.TrimSpace(req.Form.Get("amount"))
 	for i, c := range amtStr { // Assume no multibyte characters
 		if c == '.' {
 			nPer++
@@ -98,15 +98,15 @@ func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	t := Transaction{
-		Date:            req.Form.Get("date"),
+		Date:            strings.TrimSpace(req.Form.Get("date")),
 		Amount:          amt,
-		Description:     req.Form.Get("description"),
-		CategoryID:      req.Form.Get("category_id"),
-		CategoryName:    req.Form.Get("category_name"),
-		SourceID:        req.Form.Get("source_id"),
-		SourceName:      req.Form.Get("source_name"),
-		DestinationID:   req.Form.Get("destination_id"),
-		DestinationName: req.Form.Get("destination_name"),
+		Description:     strings.TrimSpace(req.Form.Get("description")),
+		CategoryID:      strings.TrimSpace(req.Form.Get("category_id")),
+		CategoryName:    strings.TrimSpace(req.Form.Get("category_name")),
+		SourceID:        strings.TrimSpace(req.Form.Get("source_id")),
+		SourceName:      strings.TrimSpace(req.Form.Get("source_name")),
+		DestinationID:   strings.TrimSpace(req.Form.Get("destination_id")),
+		DestinationName: strings.TrimSpace(req.Form.Get("destination_name")),
 	}
 
 	//
