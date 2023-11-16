@@ -160,7 +160,7 @@ func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 	// If the user accidentally enters the same account for the source and
 	// destination, we will have an expense and a revenue account with the same
 	// name, and won't be able to create new transactions for either one!
-	if t.DestinationID == t.SourceID || t.DestinationName == t.SourceName {
+	if (t.DestinationID != "" && t.DestinationID == t.SourceID) || (t.DestinationName != "" && t.DestinationName == t.SourceName) {
 		httperror.Send(w, req, http.StatusBadRequest, fmt.Sprintf("source and destination accounts cannot be the same (got '%s' for both!)", t.DestinationName))
 		return
 	}
