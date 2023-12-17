@@ -2,6 +2,7 @@ version: 2
 updates:
   - package-ecosystem: "npm"
     directory: "/src/frontend"
+    versioning-strategy: increase-if-necessary
     schedule:
       interval: "weekly"
   - package-ecosystem: "gomod"
