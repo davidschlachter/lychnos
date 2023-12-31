@@ -37,9 +37,9 @@ func TestHandle(t *testing.T) {
 		WillReturnRows(sqlmock.NewRows([]string{"id", "budget", "category", "amount"}).
 			AddRow(1, 1, 1, "1000"))
 	// Fetch
-	mock.ExpectQuery(`SELECT id, budget, category, amount FROM category_budgets WHERE id`).
-		WillReturnRows(sqlmock.NewRows([]string{"id", "budget", "category", "amount"}).
-			AddRow(1, 1, 1, "1000"))
+	mock.ExpectQuery(`SELECT id, budget, category, amount FROM category_budgets WHERE id = \?;`).
+		WithArgs("1").WillReturnRows(sqlmock.NewRows([]string{"id", "budget", "category", "amount"}).
+		AddRow(1, 1, 1, "1000"))
 	// Delete
 	mock.ExpectExec(`DELETE FROM category_budgets WHERE id`).WithArgs(1).
 		WillReturnResult(sqlmock.NewResult(1, 1))
