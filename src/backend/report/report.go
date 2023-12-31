@@ -121,7 +121,7 @@ func (r *Reports) ListCategorySummaries(budgetID int) ([]CategorySummary, error)
 	if err != nil {
 		return nil, fmt.Errorf("could not list categorybudgets: %s", err)
 	}
-	categorytotals, err := r.f.CachedListCategoryTotals(budget[0].Start, budget[0].End)
+	categorytotals, err := r.f.CachedListCategoryTotals(budget[0].Start.Local(), budget[0].End.Local())
 	if err != nil {
 		return nil, fmt.Errorf("could not list Category Totals: %s", err)
 	}
