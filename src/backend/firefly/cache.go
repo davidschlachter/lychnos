@@ -202,6 +202,8 @@ func (f *Firefly) refreshTransactions(key transactionsKey) error {
 	return nil
 }
 
+// RefreshCaches refreshes caches for the current budget and its related data.
+// This is intended to be run when lychnos launches.
 func (f *Firefly) RefreshCaches(c *categorybudget.CategoryBudgets, b *budget.Budgets) error {
 	err := f.refreshCategories()
 	if err != nil {
@@ -221,7 +223,12 @@ func (f *Firefly) RefreshCaches(c *categorybudget.CategoryBudgets, b *budget.Bud
 		return fmt.Errorf("failed to list category budgets: %s", err)
 	}
 
+	now := time.Now()
 	for _, bgt := range bs {
+		if now.Before(bgt.Start) || now.After(bgt.End) {
+			continue // Only update the cache for the current budget.
+		}
+
 		go func(bgt budget.Budget) {
 			key := categoryTotalsKey{
 				Start: bgt.Start,
