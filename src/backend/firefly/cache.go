@@ -248,8 +248,8 @@ func (f *Firefly) RefreshCaches(c *categorybudget.CategoryBudgets, b *budget.Bud
 				go func(i interval.ReportingInterval, cb categorybudget.CategoryBudget) {
 					key := categoryTotalsKey{
 						CategoryID: cb.Category,
-						Start:      i.Start,
-						End:        i.End,
+						Start:      i.Start.Local(),
+						End:        i.End.Local(),
 					}
 					err := f.refreshCategoryTotals(key)
 					if err != nil {
