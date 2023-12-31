@@ -120,7 +120,7 @@ func (c *CategoryBudgets) list(w http.ResponseWriter, req *http.Request) {
 			err = c.b.Upsert(
 				budget,
 				time.Date(now.Year(), time.January, 01, 0, 0, 0, 0, time.Local),
-				time.Date(now.Year(), time.December, 31, 0, 0, 0, 0, time.Local),
+				time.Date(now.Year(), time.December, 31, 23, 59, 59, 59, time.Local),
 				0,
 			)
 			if err != nil {
