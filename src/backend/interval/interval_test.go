@@ -24,13 +24,13 @@ var expectedIntervals = [][2]string{
 	{"2020-12-01 00:00:00 -0500", "2020-12-31 23:59:59 -0500"},
 }
 
-func TestHandle(t *testing.T) {
+func TestIntervals(t *testing.T) {
 	location, err := time.LoadLocation("America/Toronto")
 	if err != nil {
 		t.Fatalf("Failed to load location 'America/Toronto': %s", err)
 	}
-	start := time.Date(2020, 1, 1, 0, 0, 0, 0, location)
-	end := time.Date(2020, 12, 30, 23, 59, 59, 0, location)
+	start := time.Date(2020, 1, 1, 5, 0, 0, 0, time.Now().UTC().Location())
+	end := time.Date(2021, 1, 1, 4, 59, 59, 0, time.Now().UTC().Location())
 	intervals := interval.Get(start, end, location)
 
 	if len(intervals) != len(expectedIntervals) {
