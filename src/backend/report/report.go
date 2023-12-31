@@ -227,10 +227,10 @@ func (r *Reports) FetchCategorySummary(catBgtID int) ([]CategorySummaryDetail, e
 		return nil, fmt.Errorf("unknown reporting interval %d, only monthly is supported", budget[0].ReportingInterval)
 	}
 
-	intervals := interval.Get(budget[0].Start, budget[0].End, time.Now().UTC().Location())
+	intervals := interval.Get(budget[0].Start, budget[0].End, time.Now().Local().Location())
 
 	for _, i := range intervals {
-		ct, err := r.f.CachedFetchCategoryTotals(cs.ID, i.Start, i.End)
+		ct, err := r.f.CachedFetchCategoryTotals(cs.ID, i.Start.Local(), i.End.Local())
 		if err != nil {
 			return nil, fmt.Errorf("could not generate category summary: %s", err)
 		}

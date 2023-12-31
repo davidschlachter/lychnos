@@ -236,7 +236,7 @@ func (f *Firefly) RefreshCaches(c *categorybudget.CategoryBudgets, b *budget.Bud
 			if cb.Budget != bgt.ID {
 				continue
 			}
-			intervals := interval.Get(bgt.Start, bgt.End, time.Now().UTC().Location())
+			intervals := interval.Get(bgt.Start, bgt.End, time.Now().Local().Location())
 			for _, i := range intervals {
 				go func(i interval.ReportingInterval, cb categorybudget.CategoryBudget) {
 					key := categoryTotalsKey{

@@ -191,7 +191,7 @@ func (b *Budgets) Upsert(id int, start, end time.Time, interval int) error {
 	const q = "REPLACE INTO budgets (id, start, end, reporting_interval) VALUES(?, ?, ?, ?);"
 
 	// Insert the budget into the database
-	_, err := b.db.Exec(q, id, start.Format(dateFormat), end.Format(dateFormat), interval)
+	_, err := b.db.Exec(q, id, start.UTC().Format(dateFormat), end.UTC().Format(dateFormat), interval)
 	return err
 }
 
