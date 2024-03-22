@@ -14,3 +14,8 @@ body {
 	flex-direction: column;
 	height: 100vh;
 }
+
+/* Expand the background of the bottom bar to match the height of the bar */
+#root > .MuiPaper-elevation {
+  box-sizing: initial!important;
+}

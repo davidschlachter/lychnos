@@ -16,10 +16,11 @@ export default function NavBar() {
     const currentPage = routeMatch?.pattern?.path;
 
     return (
-        <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }} elevation={3} style={{zIndex: 3}}>
+        <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }} elevation={3} style={{ zIndex: 3 }}>
             <BottomNavigation
                 value={currentPage}
                 showLabels
+                sx={{ paddingBottom: 'env(safe-area-inset-right)' }}
             >
                 <BottomNavigationAction label="Summary" icon={<AlignHorizontalLeftIcon />} value="/" to="/" component={Link} />
                 <BottomNavigationAction label="New Txn" icon={<AddBoxIcon />} value="/newTxn" to="/newTxn" component={Link} />
