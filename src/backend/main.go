@@ -65,6 +65,15 @@ func main() {
 		log.Fatalf("Failed to update caches: %s", err)
 	}
 
+	go func(c *categorybudget.CategoryBudgets, b *budget.Budgets) {
+		for range time.Tick(time.Minute) {
+			err = f.InvalidateCacheIfAccountBalancesHaveChanged(c, b)
+			if err != nil {
+				fmt.Printf("Failed to check for stale cache: %s", err)
+			}
+		}
+	}(c, b)
+
 	log.Println("Listening for connections...")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
