@@ -263,6 +263,38 @@ func (f *Firefly) RefreshCaches(c *categorybudget.CategoryBudgets, b *budget.Bud
 	return nil
 }
 
+// InvalidateCacheIfAccountBalancesHaveChanged checks if the balances of the
+// asset accounts are different than what we currently have in the cache. If
+// yes, we refresh all our caches.
+//
+// Initially, I designed the cache with the assumption that all transaction
+// inputs would happen in lychnos. However, it turns out that I often balance
+// accounts in firefly-iii directly. This causes the lychnos cache to become
+// stale, and then I have to manually restart lychnos. Instead, we can call this
+// function on some interval to make sure that our caches are always fresh.
+func (f *Firefly) InvalidateCacheIfAccountBalancesHaveChanged(c *categorybudget.CategoryBudgets, b *budget.Budgets) error {
+	cachedAccounts, err := f.CachedAccounts()
+	if err != nil {
+		return err
+	}
+	freshAssetAccounts, err := f.ListAccounts("asset")
+	if err != nil {
+		return err
+	}
+
+	// Nested loop isn't ideal, but it's easier for now than changing the data
+	// structures. Plus, we won't have more than a few hundred accounts.
+	for _, freshAssetAccount := range freshAssetAccounts {
+		for _, cachedAccount := range cachedAccounts {
+			if freshAssetAccount.ID == cachedAccount.ID && !freshAssetAccount.Attributes.CurrentBalance.Equal(cachedAccount.Attributes.CurrentBalance) {
+				f.invalidateTransactionsCache()
+				return f.RefreshCaches(c, b)
+			}
+		}
+	}
+	return nil
+}
+
 // refreshCategoryTxnCache will invalidate cache entries related to a particular
 // category and time. This should be called after creating a transaction.
 func (f *Firefly) refreshCategoryTxnCache(tgt categoryTotalsKey) {
