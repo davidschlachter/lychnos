@@ -65,6 +65,11 @@ type createRequest struct {
 	Transactions []Transaction `json:"transactions"`
 }
 
+const (
+	inputDateFormat      = "2006-01-02"
+	fireflyAPIDateFormat = "2006-01-02T15:04:05-07:00"
+)
+
 func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 	err := req.ParseForm()
 	if err != nil {
@@ -97,8 +102,20 @@ func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 		httperror.Send(w, req, http.StatusInternalServerError, fmt.Sprintf("Could not parse amount: %s", req.Form.Get("amount")))
 		return
 	}
+
+	txnDate, err := time.Parse(inputDateFormat, strings.TrimSpace(req.Form.Get("date")))
+	if err != nil {
+		httperror.Send(w, req, http.StatusBadRequest, fmt.Sprintf("Could not parse date '%s'", strings.TrimSpace(req.Form.Get("date"))))
+		return
+	}
+	// Clients only provide the date. If the date is today, we want to add the
+	// current time to it. This helps transactions stay in the expected order.
+	if txnDate.Day() == time.Now().Day() && txnDate.Month() == time.Now().Month() && txnDate.Year() == time.Now().Year() {
+		txnDate = time.Now()
+	}
+
 	t := Transaction{
-		Date:            strings.TrimSpace(req.Form.Get("date")),
+		Date:            txnDate.Format(fireflyAPIDateFormat),
 		Amount:          amt,
 		Description:     strings.TrimSpace(req.Form.Get("description")),
 		CategoryID:      strings.TrimSpace(req.Form.Get("category_id")),
@@ -132,14 +149,6 @@ func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 			httperror.Send(w, req, http.StatusBadRequest, fmt.Sprintf("Could not find Category with ID = '%s' or Name = '%s'", t.CategoryID, t.CategoryName))
 			return
 		}
-	}
-
-	dateFormat := "2006-01-02"
-	// firefly internal dateFormat := "2006-01-02T15:04:05-07:00"
-	txnDate, err := time.Parse(dateFormat, t.Date)
-	if err != nil {
-		httperror.Send(w, req, http.StatusBadRequest, fmt.Sprintf("Could not parse date '%s'", t.Date))
-		return
 	}
 
 	if t.Description == "" {
