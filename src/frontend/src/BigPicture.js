@@ -61,7 +61,6 @@ export default function BigPicture() {
                     Last three months
                 </Typography>
                 <Typography variant="body1" component="div" align="center" gutterBottom>
-                    In the last three months, we've
                     <table>
                         <tr>
                             <td>made</td>
@@ -85,7 +84,6 @@ export default function BigPicture() {
                     Last twelve months
                 </Typography>
                 <Typography variant="body1" component="div" align="center" gutterBottom>
-                    In the last twelve months, we've
                     <table>
                         <tr>
                             <td>made</td>
@@ -112,7 +110,7 @@ export default function BigPicture() {
                     Based on our 12-month expenses, we need ${formatDollars(Math.round(savingsNeededToRetire / 1000) * 1000)} to retire.
                 </Typography>
                 <Typography variant="body1" component="div" align="center" gutterBottom>
-                    Based on our 12-month savings rate, our savings can replace our income in <span class="bigPictureNumber">{Math.round(yearsToSave)} years</span> (in {current_year + Math.round(yearsToSave)})
+                    Based on our 12-month savings rate, this will take <span class="bigPictureNumber">{Math.round(yearsToSave)} years</span> (i.e. {current_year + Math.round(yearsToSave)})
                 </Typography>
             </Box>
         </>
