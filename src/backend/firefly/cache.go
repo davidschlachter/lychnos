@@ -18,6 +18,7 @@ import (
 
 type Cache struct {
 	Accounts       []Account
+	BigPicture     *bigPicture
 	Categories     []Category
 	CategoryTotals map[categoryTotalsKey][]CategoryTotal
 	Transactions   map[transactionsKey][]Transactions
@@ -202,6 +203,32 @@ func (f *Firefly) refreshTransactions(key transactionsKey) error {
 	return nil
 }
 
+func (f *Firefly) CachedBigPicture() (*bigPicture, error) {
+	f.cache.mu.Lock()
+	if f.cache.BigPicture == nil {
+		f.cache.mu.Unlock()
+		err := f.refreshBigPicture()
+		if err != nil {
+			return nil, err
+		}
+		f.cache.mu.Lock()
+	}
+	defer f.cache.mu.Unlock()
+	return f.cache.BigPicture, nil
+}
+
+func (f *Firefly) refreshBigPicture() error {
+	bp, err := f.fetchBigPicture()
+	if err != nil {
+		return err
+	}
+	f.cache.mu.Lock()
+	log.Printf("Cache: updating Big Picture")
+	f.cache.BigPicture = bp
+	f.cache.mu.Unlock()
+	return nil
+}
+
 // RefreshCaches refreshes caches for the current budget and its related data.
 // This is intended to be run when lychnos launches.
 func (f *Firefly) RefreshCaches(c *categorybudget.CategoryBudgets, b *budget.Budgets) error {
@@ -212,6 +239,10 @@ func (f *Firefly) RefreshCaches(c *categorybudget.CategoryBudgets, b *budget.Bud
 	err = f.refreshAccounts()
 	if err != nil {
 		return fmt.Errorf("failed to refresh accounts: %s", err)
+	}
+	err = f.refreshBigPicture()
+	if err != nil {
+		return fmt.Errorf("failed to refresh big picture: %s", err)
 	}
 
 	bs, err := b.List()

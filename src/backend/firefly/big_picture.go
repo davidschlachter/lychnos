@@ -41,6 +41,18 @@ func (f *Firefly) HandleBigPicture(w http.ResponseWriter, req *http.Request) {
 }
 
 func (f *Firefly) bigPicture(w http.ResponseWriter) error {
+	bp, err := f.CachedBigPicture()
+	if err != nil {
+		return fmt.Errorf("loading big picture: %w", err)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(bp)
+
+	return nil
+}
+
+func (f *Firefly) fetchBigPicture() (*bigPicture, error) {
 	// This logic is based on my assumptions for retirement planning. If you're
 	// using this yourself, you'll probably want different assumptions (time to
 	// fork this repo!).
@@ -49,7 +61,7 @@ func (f *Firefly) bigPicture(w http.ResponseWriter) error {
 	// Get our current net worth.
 	accounts, err := f.CachedAccounts()
 	if err != nil {
-		return fmt.Errorf("could not list accounts: %s", err)
+		return nil, fmt.Errorf("could not list accounts: %s", err)
 	}
 
 	for _, a := range accounts {
@@ -62,28 +74,28 @@ func (f *Firefly) bigPicture(w http.ResponseWriter) error {
 	// Get income/expense data, starting with the most recent three months.
 	bp.Income3Months, err = f.insight("income", time.Now().AddDate(0, -3, 0), time.Now())
 	if err != nil {
-		return fmt.Errorf("could not get three month income: %s", err)
+		return nil, fmt.Errorf("could not get three month income: %s", err)
 	}
 	bp.Expenses3Months, err = f.insight("expense", time.Now().AddDate(0, -3, 0), time.Now())
 	if err != nil {
-		return fmt.Errorf("could not get three month expenses: %s", err)
+		return nil, fmt.Errorf("could not get three month expenses: %s", err)
 	}
 
 	// Now for the last 12 months.
 	bp.Income12Months, err = f.insight("income", time.Now().AddDate(-1, 0, 0), time.Now())
 	if err != nil {
-		return fmt.Errorf("could not get twelve month income: %s", err)
+		return nil, fmt.Errorf("could not get twelve month income: %s", err)
 	}
 	bp.Expenses12Months, err = f.insight("expense", time.Now().AddDate(-1, 0, 0), time.Now())
 	if err != nil {
-		return fmt.Errorf("could not get twelve month expenses: %s", err)
+		return nil, fmt.Errorf("could not get twelve month expenses: %s", err)
 	}
 
 	// Also include what we've paid in taxes over the last twelve months, which
 	// offsets income in the frontend calculations.
 	cts, err := f.CachedCategories()
 	if err != nil {
-		return fmt.Errorf("listing cached categories: %s", err)
+		return nil, fmt.Errorf("listing cached categories: %s", err)
 	}
 	categoryID := -1
 	for _, c := range cts {
@@ -93,21 +105,18 @@ func (f *Firefly) bigPicture(w http.ResponseWriter) error {
 		}
 	}
 	if categoryID == -1 {
-		return fmt.Errorf("finding tax category: %s", err)
+		return nil, fmt.Errorf("finding tax category: %s", err)
 	}
 	taxTotals, err := f.FetchCategoryTotal(categoryID, time.Now().AddDate(-1, 0, 0), time.Now())
 	if err != nil {
-		return fmt.Errorf("listing tax totals: %s", err)
+		return nil, fmt.Errorf("listing tax totals: %s", err)
 	}
 	if len(taxTotals) != 1 {
-		return fmt.Errorf("expected tax array to contain 1 item, contained %d", len(taxTotals))
+		return nil, fmt.Errorf("expected tax array to contain 1 item, contained %d", len(taxTotals))
 	}
 	bp.Taxes12Months = taxTotals[0].Earned.Add(taxTotals[0].Spent)
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(bp)
-
-	return nil
+	return &bp, nil
 }
 
 func (f *Firefly) insight(transactionType string, start time.Time, end time.Time) (decimal.Decimal, error) {

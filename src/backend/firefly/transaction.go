@@ -234,7 +234,8 @@ func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 	f.invalidateTransactionsCache() // since user is going to txns page next, update now
 	go func() {                     // we can update other caches after returning
 		f.refreshCategoryTxnCache(key)
-		_ = f.refreshAccounts()
+		_ = f.refreshAccounts()   // Loads any new accounts created, updates balances
+		_ = f.refreshBigPicture() // Net worth probably changed
 	}()
 
 	// Successful txn creation should redirect the client to the transactions page
