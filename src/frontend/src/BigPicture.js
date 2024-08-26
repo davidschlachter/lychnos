@@ -2,6 +2,7 @@ import React from 'react';
 import useFetch from "./useFetch";
 import Header from './Header.js';
 import Spinner from './Spinner.js'
+import './BigPicture.css';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import { useParams } from "react-router-dom";
@@ -49,34 +50,57 @@ export default function BigPicture() {
             <Header back_visibility="visible" title="Big Picture"></Header>
             <Box sx={{ p: 2, pb: 8 }}>
                 <Typography variant="body1" component="div" align="center" gutterBottom>
-                    Our net worth is currently ${formatDollars(net_worth)}
+                    Our net worth is currently <span class="bigPictureNumber">${formatDollars(net_worth)}</span>
                 </Typography>
+                <br />
                 <Typography variant="h6" component="div" align="center" gutterBottom>
                     Last three months
                 </Typography>
                 <Typography variant="body1" component="div" align="center" gutterBottom>
-                    In the last three months, we've made ${formatDollars(income_three_months)} and spent ${formatDollars(-1 * expenses_three_months)}
+                    In the last three months, we've
+                    <table>
+                        <tr>
+                            <td>made</td>
+                            <td>${formatDollars(income_three_months)}</td>
+                        </tr>
+                        <tr>
+                            <td>spent</td>
+                            <td>${formatDollars(-1 * expenses_three_months)}</td>
+                        </tr>
+                    </table>
                 </Typography>
                 <Typography variant="body1" component="div" align="center" gutterBottom>
-                    Savings rate: {Math.round(((income_three_months + expenses_three_months) / income_three_months) * 100)}% of income saved.
+                    Savings rate: <span class="bigPictureNumber">{Math.round(((income_three_months + expenses_three_months) / income_three_months) * 100)}% of income saved</span>
                 </Typography>
+                <br />
                 <Typography variant="h6" component="div" align="center" gutterBottom>
                     Last twelve months
                 </Typography>
                 <Typography variant="body1" component="div" align="center" gutterBottom>
-                    In the last twelve months, we've made ${formatDollars(income_twelve_months)} and spent ${formatDollars(-1 * expenses_twelve_months)}
+                    In the last twelve months, we've
+                    <table>
+                        <tr>
+                            <td>made</td>
+                            <td>${formatDollars(income_twelve_months)}</td>
+                        </tr>
+                        <tr>
+                            <td>spent</td>
+                            <td>${formatDollars(-1 * expenses_twelve_months)}</td>
+                        </tr>
+                    </table>
                 </Typography>
                 <Typography variant="body1" component="div" align="center" gutterBottom>
-                    Savings rate: {Math.round(((income_twelve_months + expenses_twelve_months) / income_twelve_months) * 100)}% of income saved.
+                    Savings rate: <span class="bigPictureNumber">{Math.round(((income_twelve_months + expenses_twelve_months) / income_twelve_months) * 100)}% of income saved</span>
                 </Typography>
+                <br />
                 <Typography variant="h6" component="div" align="center" gutterBottom>
                     Retirement
                 </Typography>
                 <Typography variant="body1" component="div" align="center" gutterBottom>
-                    Based on our 12-month expenses, we need ${formatDollars(savingsNeededToRetire)} to retire.
+                    Based on our 12-month expenses, we need ${formatDollars(Math.round(savingsNeededToRetire / 1000) * 1000)} to retire.
                 </Typography>
                 <Typography variant="body1" component="div" align="center" gutterBottom>
-                    Based on our 12-month savings rate, our savings can replace our income in {Math.round(yearsToSave)} years (in {current_year + Math.round(yearsToSave)})
+                    Based on our 12-month savings rate, our savings can replace our income in <span class="bigPictureNumber">{Math.round(yearsToSave)} years</span> (in {current_year + Math.round(yearsToSave)})
                 </Typography>
             </Box>
         </>

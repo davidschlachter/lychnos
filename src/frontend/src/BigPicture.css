@@ -1,0 +1,26 @@
+table {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+table tr td:last-child {
+    text-align: right;
+    font-family: monospace;
+    padding-left: 0.5em;
+}
+
+.bigPictureNumber {
+    background-color: #a2ffa5;
+    color: black;
+    padding: 4px 8px;
+    border-radius: 12px;
+}
+
+@media (prefers-color-scheme: dark) {
+    .bigPictureNumber {
+        background-color: #005003;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 12px;
+    }
+}
