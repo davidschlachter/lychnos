@@ -1,3 +1,4 @@
+import BigPicture from './BigPicture'
 import CategoryDetail from './CategoryDetail';
 import CategorySummaries from './CategorySummaries';
 import EditBudget from './EditBudget';
@@ -43,6 +44,7 @@ function App() {
           <Route path="/categorydetail/:categoryId" element={<CategoryDetailHelper />} />
           <Route path="/txn/:txnID" element={<TransactionDetail />} />
           <Route path="/budget/" element={<EditBudget />} />
+          <Route path="/bigpicture/" element={<BigPicture />} />
         </Routes>
         <NavBar />
       </Router>

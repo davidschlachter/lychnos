@@ -72,7 +72,13 @@ export default function Header(props) {
                                 style={{ "visibility": Boolean(props.budgetedit) }}
                                 to="/budget/"
                                 component={Link}
-                            >Edit budget</MenuItem>
+                            >✏️ Edit budget</MenuItem>
+                            <MenuItem
+                                onClick={handleClose}
+                                style={{ "visibility": Boolean(props.bigpicture) }}
+                                to="/bigpicture/"
+                                component={Link}
+                            >📈 Big picture</MenuItem>
                         </Menu>
                     </div>
                 </Toolbar>
