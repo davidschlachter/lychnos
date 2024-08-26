@@ -5,10 +5,8 @@ import Spinner from './Spinner.js'
 import './BigPicture.css';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import { useParams } from "react-router-dom";
 
 export default function BigPicture() {
-    const { txnID } = useParams();
     const { response, error, loading } = useFetch(
         "/api/bigpicture/",
         {
