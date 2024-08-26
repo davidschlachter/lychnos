@@ -277,7 +277,7 @@ func (f *Firefly) InvalidateCacheIfAccountBalancesHaveChanged(c *categorybudget.
 	if err != nil {
 		return err
 	}
-	freshAssetAccounts, err := f.ListAccounts("asset")
+	freshAssetAccounts, err := f.ListAccounts(AcctTypeAsset)
 	if err != nil {
 		return err
 	}
