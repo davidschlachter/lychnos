@@ -32,14 +32,20 @@ export default function BigPicture() {
     }
 
     const net_worth = parseFloat(response.net_worth)
-    const income_three_months = parseFloat(response.income_three_months)
-    const expenses_three_months = parseFloat(response.expenses_three_months)
-    const income_twelve_months = parseFloat(response.income_twelve_months)
-    const expenses_twelve_months = parseFloat(response.expenses_twelve_months)
+
     const taxes_twelve_months = parseFloat(response.taxes_twelve_months)
+    const taxes_three_months = parseFloat(response.taxes_three_months)
+
+    // 'Income' means net income, after taxes; we also exclude taxes from
+    // 'Expenses'.
+    const income_three_months = parseFloat(response.income_three_months) + taxes_three_months
+    const expenses_three_months = parseFloat(response.expenses_three_months) - taxes_three_months
+    const income_twelve_months = parseFloat(response.income_twelve_months) + taxes_twelve_months
+    const expenses_twelve_months = parseFloat(response.expenses_twelve_months) - taxes_twelve_months
+
     const current_year = new Date().getFullYear()
 
-    const savingsNeededToRetire = (-1 * (expenses_twelve_months - taxes_twelve_months)) / 0.04
+    const savingsNeededToRetire = (-1 * expenses_twelve_months) / 0.04
     const annualAmountSaved = (income_twelve_months + expenses_twelve_months)
     const assumedInterestRate = 0.04
     const discountRate = assumedInterestRate / (1 + assumedInterestRate)
