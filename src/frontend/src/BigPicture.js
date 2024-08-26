@@ -71,6 +71,10 @@ export default function BigPicture() {
                             <td>spent</td>
                             <td>${formatDollars(-1 * expenses_three_months)}</td>
                         </tr>
+                        <tr>
+                            <td>saved</td>
+                            <td>${formatDollars(income_three_months + expenses_three_months)}</td>
+                        </tr>
                     </table>
                 </Typography>
                 <Typography variant="body1" component="div" align="center" gutterBottom>
@@ -90,6 +94,10 @@ export default function BigPicture() {
                         <tr>
                             <td>spent</td>
                             <td>${formatDollars(-1 * expenses_twelve_months)}</td>
+                        </tr>
+                        <tr>
+                            <td>saved</td>
+                            <td>${formatDollars(income_twelve_months + expenses_twelve_months)}</td>
                         </tr>
                     </table>
                 </Typography>
