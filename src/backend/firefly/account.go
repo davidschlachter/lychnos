@@ -23,10 +23,11 @@ type Account struct {
 }
 
 type AccountAttributes struct {
-	Active         bool            `json:"active"`
-	Name           string          `json:"name"`
-	Type           string          `json:"type"`
-	CurrentBalance decimal.Decimal `json:"current_balance"`
+	Active          bool            `json:"active"`
+	Name            string          `json:"name"`
+	Type            string          `json:"type"`
+	CurrentBalance  decimal.Decimal `json:"current_balance"`
+	IncludeNetWorth bool            `json:"include_net_worth"`
 }
 
 func (f *Firefly) HandleAccount(w http.ResponseWriter, req *http.Request) {

@@ -66,7 +66,7 @@ func (f *Firefly) fetchBigPicture() (*bigPicture, error) {
 	}
 
 	for _, a := range accounts {
-		if a.Attributes.Type != AcctTypeAsset {
+		if a.Attributes.Type != AcctTypeAsset || !a.Attributes.IncludeNetWorth {
 			continue
 		}
 		bp.NetWorth = bp.NetWorth.Add(a.Attributes.CurrentBalance)
