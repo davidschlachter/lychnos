@@ -29,6 +29,11 @@ function AmountLeft(props) {
         sign = -1
     }
 
+    // If the amount is very close to zero, round it to zero.
+    if (left < 2 && left > -2) {
+        left = 0;
+    }
+
     return (
         <span style={{
             "color": color
