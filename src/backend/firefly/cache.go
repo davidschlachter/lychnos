@@ -198,6 +198,9 @@ func (f *Firefly) refreshTransactions(key transactionsKey) error {
 	}
 	f.cache.mu.Lock()
 	log.Printf("Cache: updating Transactions for key %d, %s, %s", key.Page, key.Start, key.End)
+	if f.cache.Transactions == nil {
+		f.cache.Transactions = make(map[transactionsKey][]Transactions)
+	}
 	f.cache.Transactions[key] = t
 	f.cache.mu.Unlock()
 	return nil
