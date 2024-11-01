@@ -107,5 +107,13 @@ func (f *Firefly) ListAccounts(accountType string) ([]Account, error) {
 		more = accs.Meta.Pagination.CurrentPage < accs.Meta.Pagination.TotalPages
 	}
 
-	return results, err
+	// Only include 'active' accounts.
+	filteredResults := make([]Account, 0, len(results))
+	for i := range results {
+		if results[i].Attributes.Active {
+			filteredResults = append(filteredResults, results[i])
+		}
+	}
+
+	return filteredResults, err
 }
