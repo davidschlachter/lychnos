@@ -17,9 +17,11 @@ type bigPicture struct {
 	Expenses12Months decimal.Decimal `json:"expenses_twelve_months"`
 	Income12Months   decimal.Decimal `json:"income_twelve_months"`
 	Taxes12Months    decimal.Decimal `json:"taxes_twelve_months"`
+	Interest12Months decimal.Decimal `json:"interest_twelve_months"`
 	Income3Months    decimal.Decimal `json:"income_three_months"`
 	Expenses3Months  decimal.Decimal `json:"expenses_three_months"`
 	Taxes3Months     decimal.Decimal `json:"taxes_three_months"`
+	Interest3Months  decimal.Decimal `json:"interest_three_months"`
 	NetWorth         decimal.Decimal `json:"net_worth"`
 }
 
@@ -94,13 +96,22 @@ func (f *Firefly) fetchBigPicture() (*bigPicture, error) {
 
 	// Also include what we've paid in taxes, which offsets income in the
 	// frontend calculations.
-	bp.Taxes12Months, err = f.taxes(time.Now().AddDate(-1, 0, 0), time.Now())
+	bp.Taxes12Months, err = f.categorySum(time.Now().AddDate(-1, 0, 0), time.Now(), "taxes")
 	if err != nil {
 		return nil, fmt.Errorf("getting 12-month tax totals: %w", err)
 	}
-	bp.Taxes3Months, err = f.taxes(time.Now().AddDate(0, -3, 0), time.Now())
+	bp.Taxes3Months, err = f.categorySum(time.Now().AddDate(0, -3, 0), time.Now(), "taxes")
 	if err != nil {
 		return nil, fmt.Errorf("getting 3-month tax totals: %w", err)
+	}
+	// Similarly, we want to exclude Interest from these totals.
+	bp.Interest12Months, err = f.categorySum(time.Now().AddDate(-1, 0, 0), time.Now(), "interest or fees")
+	if err != nil {
+		return nil, fmt.Errorf("getting 12-month interest totals: %w", err)
+	}
+	bp.Interest3Months, err = f.categorySum(time.Now().AddDate(0, -3, 0), time.Now(), "interest or fees")
+	if err != nil {
+		return nil, fmt.Errorf("getting 3-month interest totals: %w", err)
 	}
 
 	return &bp, nil
@@ -132,27 +143,27 @@ func (f *Firefly) insight(transactionType string, start time.Time, end time.Time
 	return i[0].Difference, nil
 }
 
-func (f *Firefly) taxes(start, end time.Time) (decimal.Decimal, error) {
+func (f *Firefly) categorySum(start, end time.Time, category string) (decimal.Decimal, error) {
 	cts, err := f.CachedCategories()
 	if err != nil {
 		return decimal.Decimal{}, fmt.Errorf("listing cached categories: %s", err)
 	}
 	categoryID := -1
 	for _, c := range cts {
-		if strings.ToLower(c.Name) == "taxes" {
+		if strings.ToLower(c.Name) == category {
 			categoryID = c.ID
 			break
 		}
 	}
 	if categoryID == -1 {
-		return decimal.Decimal{}, fmt.Errorf("finding tax category: %s", err)
+		return decimal.Decimal{}, fmt.Errorf("finding '%s' category: %s", category, err)
 	}
-	taxTotals, err := f.FetchCategoryTotal(categoryID, start, end)
+	categoryTotal, err := f.FetchCategoryTotal(categoryID, start, end)
 	if err != nil {
-		return decimal.Decimal{}, fmt.Errorf("listing tax totals: %s", err)
+		return decimal.Decimal{}, fmt.Errorf("listing '%s' totals: %s", category, err)
 	}
-	if len(taxTotals) != 1 {
-		return decimal.Decimal{}, fmt.Errorf("expected tax array to contain 1 item, contained %d", len(taxTotals))
+	if len(categoryTotal) != 1 {
+		return decimal.Decimal{}, fmt.Errorf("expected '%s' array to contain 1 item, contained %d", category, len(categoryTotal))
 	}
-	return taxTotals[0].Earned.Add(taxTotals[0].Spent), nil
+	return categoryTotal[0].Earned.Add(categoryTotal[0].Spent), nil
 }
