@@ -39,20 +39,11 @@ export default function BigPicture() {
 
     // 'Income' means net income, after taxes; we also exclude taxes from
     // 'Expenses', and interest from income (if positive).
-    if (interest_twelve_months > 0) {
-        const income_twelve_months = parseFloat(response.income_twelve_months) + taxes_twelve_months - interest_twelve_months
-        const expenses_twelve_months = parseFloat(response.expenses_twelve_months) - taxes_twelve_months
-    } else {
-        const income_twelve_months = parseFloat(response.income_twelve_months) + taxes_twelve_months
-        const expenses_twelve_months = parseFloat(response.expenses_twelve_months) - taxes_twelve_months - interest_twelve_months
-    }
-    if (interest_three_months > 0) {
-        const income_three_months = parseFloat(response.income_three_months) + taxes_three_months - interest_three_months
-        const expenses_three_months = parseFloat(response.expenses_three_months) - taxes_three_months
-    } else {
-        const income_three_months = parseFloat(response.income_three_months) + taxes_three_months
-        const expenses_three_months = parseFloat(response.expenses_three_months) - taxes_three_months - interest_three_months
-    }
+    const income_twelve_months = interest_twelve_months > 0 ? parseFloat(response.income_twelve_months) + taxes_twelve_months + interest_twelve_months : parseFloat(response.income_twelve_months) + taxes_twelve_months
+    const expenses_twelve_months = interest_twelve_months > 0 ? parseFloat(response.expenses_twelve_months) - taxes_twelve_months : parseFloat(response.expenses_twelve_months) - taxes_twelve_months - interest_twelve_months
+
+    const income_three_months = interest_three_months > 0 ? parseFloat(response.income_three_months) + taxes_three_months + interest_three_months : parseFloat(response.income_three_months) + taxes_three_months
+    const expenses_three_months = interest_three_months > 0 ? parseFloat(response.expenses_three_months) - taxes_three_months : parseFloat(response.expenses_three_months) - taxes_three_months - interest_three_months
 
     const current_year = new Date().getFullYear()
 
