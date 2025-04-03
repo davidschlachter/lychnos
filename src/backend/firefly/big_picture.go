@@ -18,11 +18,13 @@ type bigPicture struct {
 	Income12Months   decimal.Decimal `json:"income_twelve_months"`
 	Taxes12Months    decimal.Decimal `json:"taxes_twelve_months"`
 	Interest12Months decimal.Decimal `json:"interest_twelve_months"`
-	Income3Months    decimal.Decimal `json:"income_three_months"`
-	Expenses3Months  decimal.Decimal `json:"expenses_three_months"`
-	Taxes3Months     decimal.Decimal `json:"taxes_three_months"`
-	Interest3Months  decimal.Decimal `json:"interest_three_months"`
-	NetWorth         decimal.Decimal `json:"net_worth"`
+
+	Income3Months   decimal.Decimal `json:"income_three_months"`
+	Expenses3Months decimal.Decimal `json:"expenses_three_months"`
+	Taxes3Months    decimal.Decimal `json:"taxes_three_months"`
+	Interest3Months decimal.Decimal `json:"interest_three_months"`
+
+	NetWorth decimal.Decimal `json:"net_worth"`
 }
 
 type insight struct {
@@ -120,11 +122,11 @@ func (f *Firefly) fetchBigPicture() (*bigPicture, error) {
 func (f *Firefly) insight(transactionType string, start time.Time, end time.Time) (decimal.Decimal, error) {
 	path := fmt.Sprintf("/api/v1/insight/%s/total?start=%s&end=%s", transactionType, start.Format("2006-01-02"), end.Format("2006-01-02"))
 
-	req, err := http.NewRequest("GET", f.url+path, nil)
+	req, err := http.NewRequest("GET", f.config.URL+path, nil)
 	if err != nil {
 		return decimal.Decimal{}, fmt.Errorf("failed to create request: %s", err)
 	}
-	req.Header.Add("Authorization", "Bearer "+f.token)
+	req.Header.Add("Authorization", "Bearer "+f.config.Token)
 
 	resp, err := f.client.Do(req)
 	if err != nil {

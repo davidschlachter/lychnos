@@ -17,7 +17,7 @@ func TestMain(m *testing.M) {
 	var err error
 	setup()
 	defer server.Close()
-	f, err = firefly.New(server.Client(), "token", server.URL)
+	f, err = firefly.New(server.Client(), firefly.Config{"token", server.URL})
 	if err != nil {
 		fmt.Printf("Unexpected error in setup: %s\n", err)
 		os.Exit(1)

@@ -6,20 +6,23 @@ import (
 	"net/http"
 )
 
-type Firefly struct {
-	client     *http.Client
-	token, url string
-	cache      Cache
+type Config struct {
+	Token, URL string
 }
 
-func New(client *http.Client, token, url string) (*Firefly, error) {
-	if len(token) == 0 || len(url) == 0 || client == nil {
+type Firefly struct {
+	client *http.Client
+	config Config
+	cache  Cache
+}
+
+func New(client *http.Client, c Config) (*Firefly, error) {
+	if len(c.Token) == 0 || len(c.URL) == 0 || client == nil {
 		return nil, fmt.Errorf("must provide valid client, token and url")
 	}
 	return &Firefly{
 		client: client,
-		token:  token,
-		url:    url,
+		config: c,
 	}, nil
 }
 

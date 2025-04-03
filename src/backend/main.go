@@ -31,8 +31,10 @@ func main() {
 
 	f, err := firefly.New(
 		&http.Client{Timeout: time.Second * 30},
-		token,
-		fireflyBase,
+		firefly.Config{
+			Token: token,
+			URL:   fireflyBase,
+		},
 	)
 	if err != nil {
 		log.Fatalf("Could not initialize Firefly-III client: %s", err)
