@@ -198,8 +198,8 @@ func (f *Firefly) createTxn(w http.ResponseWriter, req *http.Request) {
 		httperror.Send(w, req, http.StatusInternalServerError, fmt.Sprintf("Could not marshal CreateRequest: %s", err))
 		return
 	}
-	r, _ := http.NewRequest("POST", f.url+path, bytes.NewBuffer(body))
-	r.Header.Add("Authorization", "Bearer "+f.token)
+	r, _ := http.NewRequest("POST", f.config.URL+path, bytes.NewBuffer(body))
+	r.Header.Add("Authorization", "Bearer "+f.config.Token)
 	r.Header.Add("Content-Type", "application/json")
 	resp, err := f.client.Do(r)
 	if err != nil {
@@ -384,8 +384,8 @@ func (f *Firefly) ListTransactions(key transactionsKey) ([]Transactions, error) 
 		} else {
 			params = fmt.Sprintf("page=%d", page)
 		}
-		req, _ := http.NewRequest("GET", f.url+path+"?"+params, nil)
-		req.Header.Add("Authorization", "Bearer "+f.token)
+		req, _ := http.NewRequest("GET", f.config.URL+path+"?"+params, nil)
+		req.Header.Add("Authorization", "Bearer "+f.config.Token)
 		resp, err := f.client.Do(req)
 		if err != nil {
 			return nil, fmt.Errorf("failed to fetch Transactions: %s", err)
@@ -426,8 +426,8 @@ func (f *Firefly) fetchTxn(w http.ResponseWriter, req *http.Request) {
 func (f *Firefly) FetchTransaction(id string) (*Transactions, error) {
 	const path = "/api/v1/transactions/"
 
-	req, _ := http.NewRequest("GET", f.url+path+id, nil)
-	req.Header.Add("Authorization", "Bearer "+f.token)
+	req, _ := http.NewRequest("GET", f.config.URL+path+id, nil)
+	req.Header.Add("Authorization", "Bearer "+f.config.Token)
 	resp, err := f.client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch Transaction: %s", err)

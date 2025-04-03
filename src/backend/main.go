@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/davidschlachter/lychnos/src/backend/budget"
@@ -29,10 +31,40 @@ func main() {
 		log.Fatal("Got empty FIREFLY_URL, expected a value to be set.")
 	}
 
+	bigPictureIgnore := map[int]struct{}{}
+	bigPictureIgnoreString := os.Getenv("BIG_PICTURE_IGNORE")
+	if bigPictureIgnoreString != "" {
+		bigPictureIgnoreSlice := strings.Split(bigPictureIgnoreString, ",")
+		for i := range bigPictureIgnoreSlice {
+			categoryID, err := strconv.Atoi(bigPictureIgnoreSlice[i])
+			if err != nil {
+				log.Fatalf("converting '%s' to integer for category ID: %s", bigPictureIgnoreSlice[i], err)
+			}
+			bigPictureIgnore[categoryID] = struct{}{}
+		}
+	}
+
+	bigPictureIncome := map[int]struct{}{}
+	bigPictureIncomeString := os.Getenv("BIG_PICTURE_INCOME")
+	if bigPictureIncomeString != "" {
+		bigPictureIncomeSlice := strings.Split(bigPictureIncomeString, ",")
+		for i := range bigPictureIncomeSlice {
+			categoryID, err := strconv.Atoi(bigPictureIncomeSlice[i])
+			if err != nil {
+				log.Fatalf("converting '%s' to integer for category ID: %s", bigPictureIncomeSlice[i], err)
+			}
+			bigPictureIncome[categoryID] = struct{}{}
+		}
+	}
 	f, err := firefly.New(
 		&http.Client{Timeout: time.Second * 30},
-		token,
-		fireflyBase,
+		firefly.Config{
+			Token: token,
+			URL:   fireflyBase,
+
+			BigPictureIgnore: bigPictureIgnore,
+			BigPictureIncome: bigPictureIncome,
+		},
 	)
 	if err != nil {
 		log.Fatalf("Could not initialize Firefly-III client: %s", err)

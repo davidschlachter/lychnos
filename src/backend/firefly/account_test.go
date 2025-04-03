@@ -34,7 +34,7 @@ func TestListAccounts(t *testing.T) {
 		t.Fatalf("Got account type %s, wanted expense", a[0].Attributes.Type)
 	}
 	expectedBalance, _ := decimal.NewFromString("53.97")
-	if !a[0].Attributes.CurrentBalance.Equals(expectedBalance) {
+	if !a[0].Attributes.CurrentBalance.Equal(expectedBalance) {
 		t.Fatalf("Got account balance %s, wanted 53.97", a[0].Attributes.CurrentBalance)
 	}
 }

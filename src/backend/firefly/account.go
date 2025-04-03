@@ -87,8 +87,8 @@ func (f *Firefly) ListAccounts(accountType string) ([]Account, error) {
 
 	for more := true; more; page++ {
 		params := fmt.Sprintf("?type=%s&page=%d", accountType, page)
-		req, _ := http.NewRequest("GET", f.url+path+params, nil)
-		req.Header.Add("Authorization", "Bearer "+f.token)
+		req, _ := http.NewRequest("GET", f.config.URL+path+params, nil)
+		req.Header.Add("Authorization", "Bearer "+f.config.Token)
 		resp, err := f.client.Do(req)
 		if err != nil {
 			return nil, fmt.Errorf("failed to fetch Accounts: %s", err)

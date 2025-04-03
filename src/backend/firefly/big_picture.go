@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/shopspring/decimal"
@@ -16,17 +15,11 @@ import (
 type bigPicture struct {
 	Expenses12Months decimal.Decimal `json:"expenses_twelve_months"`
 	Income12Months   decimal.Decimal `json:"income_twelve_months"`
-	Taxes12Months    decimal.Decimal `json:"taxes_twelve_months"`
-	Interest12Months decimal.Decimal `json:"interest_twelve_months"`
-	Income3Months    decimal.Decimal `json:"income_three_months"`
-	Expenses3Months  decimal.Decimal `json:"expenses_three_months"`
-	Taxes3Months     decimal.Decimal `json:"taxes_three_months"`
-	Interest3Months  decimal.Decimal `json:"interest_three_months"`
-	NetWorth         decimal.Decimal `json:"net_worth"`
-}
 
-type insight struct {
-	Difference decimal.Decimal `json:"difference"`
+	Income3Months   decimal.Decimal `json:"income_three_months"`
+	Expenses3Months decimal.Decimal `json:"expenses_three_months"`
+
+	NetWorth decimal.Decimal `json:"net_worth"`
 }
 
 func (f *Firefly) HandleBigPicture(w http.ResponseWriter, req *http.Request) {
@@ -56,9 +49,8 @@ func (f *Firefly) bigPicture(w http.ResponseWriter) error {
 }
 
 func (f *Firefly) fetchBigPicture() (*bigPicture, error) {
-	// This logic is based on my assumptions for retirement planning. If you're
-	// using this yourself, you'll probably want different assumptions (time to
-	// fork this repo!).
+	// Note that any transactions without a category will be ignored in the 'Big
+	// Picture' summary.
 	var bp bigPicture
 
 	// Get our current net worth.
@@ -74,96 +66,52 @@ func (f *Firefly) fetchBigPicture() (*bigPicture, error) {
 		bp.NetWorth = bp.NetWorth.Add(a.Attributes.CurrentBalance)
 	}
 
-	// Get income/expense data, starting with the most recent three months.
-	bp.Income3Months, err = f.insight("income", time.Now().AddDate(0, -3, 0), time.Now())
+	categories, err := f.CachedCategories()
 	if err != nil {
-		return nil, fmt.Errorf("could not get three month income: %s", err)
-	}
-	bp.Expenses3Months, err = f.insight("expense", time.Now().AddDate(0, -3, 0), time.Now())
-	if err != nil {
-		return nil, fmt.Errorf("could not get three month expenses: %s", err)
+		return nil, fmt.Errorf("getting cached categories: %w", err)
 	}
 
-	// Now for the last 12 months.
-	bp.Income12Months, err = f.insight("income", time.Now().AddDate(-1, 0, 0), time.Now())
-	if err != nil {
-		return nil, fmt.Errorf("could not get twelve month income: %s", err)
-	}
-	bp.Expenses12Months, err = f.insight("expense", time.Now().AddDate(-1, 0, 0), time.Now())
-	if err != nil {
-		return nil, fmt.Errorf("could not get twelve month expenses: %s", err)
-	}
+	now := time.Now()
+	threeMonthsAgo := now.AddDate(0, -3, 0)
+	twelveMonthsAgo := now.AddDate(-1, 0, 0)
 
-	// Also include what we've paid in taxes, which offsets income in the
-	// frontend calculations.
-	bp.Taxes12Months, err = f.categorySum(time.Now().AddDate(-1, 0, 0), time.Now(), "taxes")
-	if err != nil {
-		return nil, fmt.Errorf("getting 12-month tax totals: %w", err)
-	}
-	bp.Taxes3Months, err = f.categorySum(time.Now().AddDate(0, -3, 0), time.Now(), "taxes")
-	if err != nil {
-		return nil, fmt.Errorf("getting 3-month tax totals: %w", err)
-	}
-	// Similarly, we want to exclude Interest from these totals.
-	bp.Interest12Months, err = f.categorySum(time.Now().AddDate(-1, 0, 0), time.Now(), "interest or fees")
-	if err != nil {
-		return nil, fmt.Errorf("getting 12-month interest totals: %w", err)
-	}
-	bp.Interest3Months, err = f.categorySum(time.Now().AddDate(0, -3, 0), time.Now(), "interest or fees")
-	if err != nil {
-		return nil, fmt.Errorf("getting 3-month interest totals: %w", err)
+	for _, c := range categories {
+		if _, ok := f.config.BigPictureIgnore[c.ID]; ok {
+			continue // Don't include in totals.
+		}
+		_, alwaysIncome := f.config.BigPictureIncome[c.ID]
+
+		// Last three months
+		categoryTotalThreeMonths, err := f.FetchCategoryTotal(c.ID, threeMonthsAgo, now)
+		if err != nil {
+			return nil, fmt.Errorf("listing '%s' three-month totals: %s", c.Name, err)
+		}
+		if len(categoryTotalThreeMonths) != 1 {
+			return nil, fmt.Errorf("expected '%s' array to contain 1 item, contained %d", c.Name, len(categoryTotalThreeMonths))
+		}
+
+		// Last twelve months
+		categoryTotalTwelveMonths, err := f.FetchCategoryTotal(c.ID, twelveMonthsAgo, now)
+		if err != nil {
+			return nil, fmt.Errorf("listing '%s' twelve-month totals: %s", c.Name, err)
+		}
+		if len(categoryTotalTwelveMonths) != 1 {
+			return nil, fmt.Errorf("expected '%s' array to contain 1 item, contained %d", c.Name, len(categoryTotalTwelveMonths))
+		}
+
+		categorySum3Months := categoryTotalThreeMonths[0].Earned.Add(categoryTotalThreeMonths[0].Spent)
+		categorySum12Months := categoryTotalTwelveMonths[0].Earned.Add(categoryTotalTwelveMonths[0].Spent)
+
+		if alwaysIncome || categoryTotalThreeMonths[0].Earned.Abs().GreaterThan(categoryTotalThreeMonths[0].Spent.Abs()) {
+			// An income category
+			bp.Income3Months = bp.Income3Months.Add(categorySum3Months)
+			bp.Income12Months = bp.Income12Months.Add(categorySum12Months)
+		} else {
+			// An expense category
+			bp.Expenses3Months = bp.Expenses3Months.Add(categorySum3Months)
+			bp.Expenses12Months = bp.Expenses12Months.Add(categorySum12Months)
+		}
 	}
 
 	return &bp, nil
-}
-
-func (f *Firefly) insight(transactionType string, start time.Time, end time.Time) (decimal.Decimal, error) {
-	path := fmt.Sprintf("/api/v1/insight/%s/total?start=%s&end=%s", transactionType, start.Format("2006-01-02"), end.Format("2006-01-02"))
-
-	req, err := http.NewRequest("GET", f.url+path, nil)
-	if err != nil {
-		return decimal.Decimal{}, fmt.Errorf("failed to create request: %s", err)
-	}
-	req.Header.Add("Authorization", "Bearer "+f.token)
-
-	resp, err := f.client.Do(req)
-	if err != nil {
-		return decimal.Decimal{}, fmt.Errorf("failed to fetch insight: %s", err)
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return decimal.Decimal{}, fmt.Errorf("got status %d", resp.StatusCode)
-	}
-
-	var i []insight
-	json.NewDecoder(resp.Body).Decode(&i)
-	if len(i) != 1 {
-		return decimal.Decimal{}, fmt.Errorf("expected array to contain 1 item, contained %d", len(i))
-	}
-	return i[0].Difference, nil
-}
-
-func (f *Firefly) categorySum(start, end time.Time, category string) (decimal.Decimal, error) {
-	cts, err := f.CachedCategories()
-	if err != nil {
-		return decimal.Decimal{}, fmt.Errorf("listing cached categories: %s", err)
-	}
-	categoryID := -1
-	for _, c := range cts {
-		if strings.ToLower(c.Name) == category {
-			categoryID = c.ID
-			break
-		}
-	}
-	if categoryID == -1 {
-		return decimal.Decimal{}, fmt.Errorf("finding '%s' category: %s", category, err)
-	}
-	categoryTotal, err := f.FetchCategoryTotal(categoryID, start, end)
-	if err != nil {
-		return decimal.Decimal{}, fmt.Errorf("listing '%s' totals: %s", category, err)
-	}
-	if len(categoryTotal) != 1 {
-		return decimal.Decimal{}, fmt.Errorf("expected '%s' array to contain 1 item, contained %d", category, len(categoryTotal))
-	}
-	return categoryTotal[0].Earned.Add(categoryTotal[0].Spent), nil
 }

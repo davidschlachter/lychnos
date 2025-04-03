@@ -31,26 +31,22 @@ export default function BigPicture() {
 
     const net_worth = parseFloat(response.net_worth)
 
-    const taxes_twelve_months = parseFloat(response.taxes_twelve_months)
-    const taxes_three_months = parseFloat(response.taxes_three_months)
+    // Essentially, this page calculates how long, at the current savings rate,
+    // it will take for 4% of net worth (approximate withdrawal rate) to be
+    // equal to our current annual spending.
+    const income_twelve_months = parseFloat(response.income_twelve_months)
+    const expenses_twelve_months = parseFloat(response.expenses_twelve_months)
 
-    const interest_twelve_months = parseFloat(response.interest_twelve_months)
-    const interest_three_months = parseFloat(response.interest_three_months)
-
-    // 'Income' means net income, after taxes; we also exclude taxes from
-    // 'Expenses', and interest from income (if positive).
-    const income_twelve_months = interest_twelve_months > 0 ? parseFloat(response.income_twelve_months) + taxes_twelve_months - interest_twelve_months : parseFloat(response.income_twelve_months) + taxes_twelve_months
-    const expenses_twelve_months = interest_twelve_months > 0 ? parseFloat(response.expenses_twelve_months) - taxes_twelve_months : parseFloat(response.expenses_twelve_months) - taxes_twelve_months - interest_twelve_months
-
-    const income_three_months = interest_three_months > 0 ? parseFloat(response.income_three_months) + taxes_three_months - interest_three_months : parseFloat(response.income_three_months) + taxes_three_months
-    const expenses_three_months = interest_three_months > 0 ? parseFloat(response.expenses_three_months) - taxes_three_months : parseFloat(response.expenses_three_months) - taxes_three_months - interest_three_months
+    const income_three_months = parseFloat(response.income_three_months)
+    const expenses_three_months = parseFloat(response.expenses_three_months)
 
     const current_year = new Date().getFullYear()
 
-    const savingsNeededToRetire = (-1 * expenses_twelve_months) / 0.04
-    const annualAmountSaved = (income_twelve_months + expenses_twelve_months)
     const assumedInterestRate = 0.04
     const discountRate = assumedInterestRate / (1 + assumedInterestRate)
+
+    const savingsNeededToRetire = (-1 * expenses_twelve_months) / assumedInterestRate
+    const annualAmountSaved = (income_twelve_months + expenses_twelve_months)
     const yearsToSave = Math.log((annualAmountSaved + savingsNeededToRetire * discountRate) / (annualAmountSaved + discountRate * net_worth)) / Math.log(assumedInterestRate + 1)
 
     return (

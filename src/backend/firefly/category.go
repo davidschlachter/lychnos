@@ -47,11 +47,11 @@ func (f *Firefly) listCategories(w http.ResponseWriter, req *http.Request) {
 func (f *Firefly) Categories() ([]Category, error) {
 	const path = "/api/v1/autocomplete/categories?limit=1000"
 
-	req, err := http.NewRequest("GET", f.url+path, nil)
+	req, err := http.NewRequest("GET", f.config.URL+path, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %s", err)
 	}
-	req.Header.Add("Authorization", "Bearer "+f.token)
+	req.Header.Add("Authorization", "Bearer "+f.config.Token)
 	resp, err := f.client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch Categories: %s", err)
@@ -106,8 +106,8 @@ func (f *Firefly) ListCategoryTotals(start, end time.Time) ([]CategoryTotal, err
 	const path = "/api/v1/categories/"
 	params := fmt.Sprintf("?start=%s&end=%s", start.Format("2006-01-02"), end.Format("2006-01-02"))
 
-	req, _ := http.NewRequest("GET", f.url+path+params, nil)
-	req.Header.Add("Authorization", "Bearer "+f.token)
+	req, _ := http.NewRequest("GET", f.config.URL+path+params, nil)
+	req.Header.Add("Authorization", "Bearer "+f.config.Token)
 	resp, err := f.client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch Categories: %s", err)
@@ -166,8 +166,8 @@ func (f *Firefly) FetchCategoryTotal(catID int, start, end time.Time) ([]Categor
 	const path = "/api/v1/categories/"
 	params := fmt.Sprintf("?start=%s&end=%s", start.Format("2006-01-02"), end.Format("2006-01-02"))
 
-	req, _ := http.NewRequest("GET", fmt.Sprintf("%s%s%d%s", f.url, path, catID, params), nil)
-	req.Header.Add("Authorization", "Bearer "+f.token)
+	req, _ := http.NewRequest("GET", fmt.Sprintf("%s%s%d%s", f.config.URL, path, catID, params), nil)
+	req.Header.Add("Authorization", "Bearer "+f.config.Token)
 	resp, err := f.client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch Category: %s", err)
