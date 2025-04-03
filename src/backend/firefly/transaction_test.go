@@ -2,15 +2,16 @@ package firefly_test
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"strings"
 	"testing"
 
-	"github.com/davidschlachter/lychnos/src/backend/firefly"
 	"github.com/shopspring/decimal"
+
+	"github.com/davidschlachter/lychnos/src/backend/firefly"
 )
 
 func TestListTransactions(t *testing.T) {
@@ -42,7 +43,7 @@ func TestListTransactions(t *testing.T) {
 		t.Fatalf("Got transaction Date %s, wanted 2022-01-01T00:00:00-05:00", x[0].Attributes.Transactions[0].Date)
 	}
 	expectedAmount, _ := decimal.NewFromString("4.50")
-	if !x[0].Attributes.Transactions[0].Amount.Equals(expectedAmount) {
+	if !x[0].Attributes.Transactions[0].Amount.Equal(expectedAmount) {
 		t.Fatalf("Got transaction Amount %s, wanted 53.97", x[0].Attributes.Transactions[0].Amount)
 	}
 	if x[0].Attributes.Transactions[0].Description != "Interest" {
@@ -94,7 +95,7 @@ func TestFetchTransaction(t *testing.T) {
 		t.Fatalf("Got transaction Date %s, wanted 2022-01-01T00:00:00-05:00", x.Attributes.Transactions[0].Date)
 	}
 	expectedAmount, _ := decimal.NewFromString("4.50")
-	if !x.Attributes.Transactions[0].Amount.Equals(expectedAmount) {
+	if !x.Attributes.Transactions[0].Amount.Equal(expectedAmount) {
 		t.Fatalf("Got transaction Amount %s, wanted 53.97", x.Attributes.Transactions[0].Amount)
 	}
 	if x.Attributes.Transactions[0].Description != "Interest" {
@@ -140,7 +141,7 @@ func TestCreateTransaction(t *testing.T) {
 
 	// Success is a 302 redirect to the transactions page
 	if w.Result().StatusCode != http.StatusFound {
-		body, _ := ioutil.ReadAll(res.Body)
+		body, _ := io.ReadAll(res.Body)
 		t.Fatalf("Status code = %d, want %d\n. Response body: %s", w.Result().StatusCode, http.StatusOK, body)
 	}
 }
