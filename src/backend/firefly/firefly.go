@@ -8,6 +8,14 @@ import (
 
 type Config struct {
 	Token, URL string
+
+	// BigPictureIgnore is a set of category IDs that will always be ignored
+	// when calculating the 'Big Picture' summary.
+	BigPictureIgnore map[int]struct{}
+	// BigPictureIncome is a set of category IDs that will always be considered
+	// as 'income' (even when they have a negative amount) when calculating the
+	// 'Big Picture' summary.
+	BigPictureIncome map[int]struct{}
 }
 
 type Firefly struct {
