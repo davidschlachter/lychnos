@@ -35,9 +35,16 @@ function FillBar(props) {
     // Size the bars according to the amount of money represented in them.
     let height;
     if (props.amount > 0) {
+        // Except for income categories.
         height = "28px";
     } else {
-        height = Math.abs(props.amount * (56 / 15000)) + "px";
+        // If we've overspent a category, make its bar reflect the actual (not
+        // the target) spending.
+        if (Math.abs(props.sum) > Math.abs(props.amount)) {
+            height = Math.abs(props.sum * (56 / 15000)) + "px";
+        } else {
+            height = Math.abs(props.amount * (56 / 15000)) + "px";
+        }
     }
 
     let style = {
