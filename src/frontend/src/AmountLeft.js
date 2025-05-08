@@ -1,6 +1,7 @@
 import { useTheme } from '@mui/material/styles';
 
 const red = '#ff5e00';
+const green = '#a2ff00';
 
 function AmountLeft(props) {
     const theme = useTheme();
@@ -25,7 +26,11 @@ function AmountLeft(props) {
     let color = theme.palette.text.primary
     let sign = 1
     if (Math.sign(left) !== Math.sign(props.amount)) {
-        if (Math.abs(left) > 10) { color = red }
+        if (props.amount > 0) {
+            color = green // Celebrate income category greater than the target
+        } else if (Math.abs(left) > 10) {
+            color = red
+        }
         sign = -1
     }
 
@@ -34,10 +39,13 @@ function AmountLeft(props) {
         left = 0;
     }
 
+    // Don't display 'amounts left' for exceeded income categories.
+    const displayString = color == green ? "✅" : sign * Math.abs(left)
+
     return (
         <span style={{
             "color": color
-        }}>{sign * Math.abs(left)}</span>
+        }}>{displayString}</span>
     );
 }
 
