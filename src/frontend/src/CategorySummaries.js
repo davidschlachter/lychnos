@@ -97,7 +97,13 @@ class CategorySummaries extends React.Component {
             let now = new Date()
             timeSpent = (Math.abs(now - start) / Math.abs(end - start)) * 100
 
-            const summaries = [...summaries_data].sort((a, b) => (+a.amount > +b.amount ? 1 : -1));
+            const summaries = [...summaries_data].sort((a, b) => {
+                // Sort by whatever is greater for a given category: the amount
+                // budgeted or the amount actually spent.
+                let aKey = Math.abs(+a.amount) > Math.abs(+a.sum) ? +a.amount : +a.sum
+                let bKey = Math.abs(+b.amount) > Math.abs(+b.sum) ? +b.amount : +b.sum
+                return aKey > bKey ? 1 : -1
+            });
 
             return (
                 <>
