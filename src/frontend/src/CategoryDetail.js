@@ -67,7 +67,7 @@ class CategoryDetail extends React.Component {
                 totalSpent += Math.round(parseFloat(item.earned) + parseFloat(item.spent))
             ));
             const actualLabel = totalSpent > 0 ? 'Earned so far' : 'Spent so far';
-            const todayLabel = Math.abs(totalSpent) < Math.abs(details[0].amount) ? '' : '-';
+            const todayLabel = Math.abs(totalSpent) < Math.abs(details[0].amount * timeSpent / 100) ? '' : '-';
             const underOver = Math.round(Math.abs(totalSpent - (details[0].amount * timeSpent / 100)));
             return (
                 <>
