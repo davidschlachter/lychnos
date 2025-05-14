@@ -1,10 +1,11 @@
 import React from 'react';
 import AmountLeft from './AmountLeft';
-import FillBar from './FillBar.js'
-import Header from './Header.js'
-import Spinner from './Spinner.js'
 import Box from '@mui/material/Box';
+import FillBar from './FillBar.js';
+import Header from './Header.js';
+import LeftToday from './LeftToday.js';
 import Paper from '@mui/material/Paper';
+import Spinner from './Spinner.js';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -67,8 +68,6 @@ class CategoryDetail extends React.Component {
                 totalSpent += Math.round(parseFloat(item.earned) + parseFloat(item.spent))
             ));
             const actualLabel = totalSpent > 0 ? 'Earned so far' : 'Spent so far';
-            const todayLabel = Math.abs(totalSpent) < Math.abs(details[0].amount * timeSpent / 100) ? '' : '-';
-            const underOver = Math.round(Math.abs(totalSpent - (details[0].amount * timeSpent / 100)));
             return (
                 <>
                     <Header back_visibility="visible" title="Category details"></Header>
@@ -78,7 +77,7 @@ class CategoryDetail extends React.Component {
                         </Typography>
                         <Typography variant="subtitle1" component="div" align="center" gutterBottom>
                             Budgeted: {details[0].amount}, {actualLabel}: {totalSpent}<br />
-                            Left per month: <AmountLeft amount={details[0].amount} sum={totalSpent} timeSpent={timeSpent} />{"; Left today: "} {todayLabel}{underOver}
+                            Left per month: <AmountLeft amount={details[0].amount} sum={totalSpent} timeSpent={timeSpent} />{"; Left today: "} <LeftToday actual={totalSpent} budgetted={details[0].amount} timeSpent={timeSpent} />
                         </Typography>
                         <div style={{ "width": "100%;" }}>
                             <FillBar amount={details[0].amount} sum={details[0].sum} now={timeSpent}></FillBar>

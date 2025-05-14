@@ -40,7 +40,7 @@ function AmountLeft(props) {
     }
 
     // Don't display 'amounts left' for exceeded income categories.
-    const displayString = color == green ? "✅" : sign * Math.abs(left)
+    const displayString = color === green ? "✅" : sign * Math.abs(left)
 
     return (
         <span style={{
