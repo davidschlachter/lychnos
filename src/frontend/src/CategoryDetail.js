@@ -67,6 +67,8 @@ class CategoryDetail extends React.Component {
                 totalSpent += Math.round(parseFloat(item.earned) + parseFloat(item.spent))
             ));
             const actualLabel = totalSpent > 0 ? 'Earned so far' : 'Spent so far';
+            const todayLabel = Math.abs(totalSpent) < Math.abs(details[0].amount) ? '' : '-';
+            const underOver = Math.round(Math.abs(totalSpent - (details[0].amount * timeSpent / 100)));
             return (
                 <>
                     <Header back_visibility="visible" title="Category details"></Header>
@@ -76,7 +78,7 @@ class CategoryDetail extends React.Component {
                         </Typography>
                         <Typography variant="subtitle1" component="div" align="center" gutterBottom>
                             Budgeted: {details[0].amount}, {actualLabel}: {totalSpent}<br />
-                            Left per month: <AmountLeft amount={details[0].amount} sum={totalSpent} timeSpent={timeSpent} />
+                            Left per month: <AmountLeft amount={details[0].amount} sum={totalSpent} timeSpent={timeSpent} />{"; Left today: "} {todayLabel}{underOver}
                         </Typography>
                         <div style={{ "width": "100%;" }}>
                             <FillBar amount={details[0].amount} sum={details[0].sum} now={timeSpent}></FillBar>
