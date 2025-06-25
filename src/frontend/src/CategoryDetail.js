@@ -27,27 +27,48 @@ class CategoryDetail extends React.Component {
 
     componentDidMount() {
         fetch("/api/reports/categorysummary/" + String(this.props.categoryId))
-            .then(res => res.json())
-            .then(
-                (result) => {
-                    this.setState({
-                        isLoaded: true,
-                        details: result
+            .then(res => {
+                if (!res.ok) {
+                    return Promise.reject(res);
+                }
+                return res.json();
+            })
+            .then(result => {
+                this.setState({
+                    isLoaded: true,
+                    details: result
+                }, () => {
+                    this.handleScrollPosition();
+                });
+            })
+            .catch(error => {
+                var error_message = `Status ${error.status} (${error.statusText})`;
+                if (typeof error.text === "function") {
+                    error.text().then(textError => {
+                        error_message += `; Message: ${textError}`;
+                        this.setState({
+                            isLoaded: true,
+                            error: error_message,
+                        });
+                    }).catch(genericError => {
+                        this.setState({
+                            isLoaded: true,
+                            error: `Parsing error message: ${genericError}`,
+                        });
                     });
-                },
-                (error) => {
+                } else {
                     this.setState({
                         isLoaded: true,
-                        error
+                        error: error_message += `; Fetch error: ${error}`,
                     });
                 }
-            )
+            });
     }
 
     render() {
         const { error, isLoaded, details } = this.state;
         if (error) {
-            return <div>Error: {error.message}</div>;
+            return <div>Error: {error}</div>;
         } else if (!isLoaded) {
             return (
                 <>
