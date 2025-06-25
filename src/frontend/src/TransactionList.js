@@ -55,7 +55,7 @@ export default function TransactionList() {
         );
     }
     if (error) {
-        return <div className="error">{JSON.stringify(error)}</div>;
+        return <div className="error">{error}</div>;
     }
     if (typeof response !== 'undefined' && "error" in response) {
         return <div className="error">Error: {response.error}</div>;
