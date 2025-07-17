@@ -51,12 +51,14 @@ export default function NewTxn() {
                         required
                         id="amount"
                         name="amount"
-                        inputProps={{ inputMode: 'decimal', pattern: '[0-9.,]*' }}
                         label="Amount"
                         variant="outlined"
                         align="center"
                         margin="normal"
                         autoComplete="off"
+                        slotProps={{
+                            htmlInput: { inputMode: 'decimal', pattern: '[0-9.,]*' }
+                        }}
                     />
                     <LoadingButton
                         variant="contained"

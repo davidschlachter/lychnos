@@ -78,12 +78,15 @@ export default function AccountsInput(props) {
                     margin="normal"
                     variant="outlined"
                     autoComplete="off"
-                    InputProps={{
-                        ...params.InputProps,
-                        type: 'search',
+                    slotProps={{
+                        input: {
+                            ...params.InputProps,
+                            type: 'search',
+                        }
                     }}
                 />
             )}
-        />)
+        />
+    );
 
 }

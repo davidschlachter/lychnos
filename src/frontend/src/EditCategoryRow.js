@@ -20,7 +20,6 @@ export default function EditCategoryRow(props) {
     }
 
     return (
-
         <TableRow key={props.id}>
             <TableCell><input
                 name={props.name}
@@ -33,7 +32,6 @@ export default function EditCategoryRow(props) {
                 required
                 id={props.id + "amount"}
                 name="amount"
-                inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
                 label="Amount"
                 variant="outlined"
                 align="center"
@@ -41,6 +39,9 @@ export default function EditCategoryRow(props) {
                 autoComplete="off"
                 defaultValue={props.amount}
                 onInput={handleInput}
+                slotProps={{
+                    htmlInput: { inputMode: 'numeric', pattern: '[0-9]*' }
+                }}
             /></TableCell>
             <TableCell>{Math.round(amount / 12)}</TableCell>
         </TableRow>
