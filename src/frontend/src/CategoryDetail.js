@@ -65,6 +65,14 @@ class CategoryDetail extends React.Component {
             });
     }
 
+    handleScrollPosition = () => {
+        const scrollPosition = sessionStorage.getItem("scrollPosition");
+        if (scrollPosition) {
+            window.scrollTo(0, parseInt(scrollPosition));
+            sessionStorage.removeItem("scrollPosition");
+        }
+    }
+
     render() {
         const { error, isLoaded, details } = this.state;
         if (error) {
