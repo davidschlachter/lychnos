@@ -10,19 +10,7 @@ import TextField from '@mui/material/TextField';
 
 export default function NewTxn() {
     const [submitted, setSubmitted] = React.useState(false);
-    const [sourceAccount, setSourceAccount] = React.useState('');
-    const [destinationAccount, setDestinationAccount] = React.useState('');
-    const [description, setDescription] = React.useState('');
-    const [amount, setAmount] = React.useState('');
-
-    const accountsAreSame = sourceAccount && destinationAccount && sourceAccount === destinationAccount;
-    const isFormValid = description.trim() && amount.trim() && sourceAccount.trim() && destinationAccount.trim() && !accountsAreSame;
-
-    function handleClick(event) {
-        if (!isFormValid) {
-            event.preventDefault();
-            return false;
-        }
+    function handleClick() {
         setSubmitted(true);
         return true;
     }
@@ -42,21 +30,9 @@ export default function NewTxn() {
                         variant="outlined"
                         align="center"
                         margin="normal"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
                     />
-                    <AccountsInput
-                        name="source_name"
-                        label="Source account"
-                        value={sourceAccount}
-                        onInputChange={(event, newValue) => setSourceAccount(newValue)}
-                    />
-                    <AccountsInput
-                        name="destination_name"
-                        label="Destination account"
-                        value={destinationAccount}
-                        onInputChange={(event, newValue) => setDestinationAccount(newValue)}
-                    />
+                    <AccountsInput name="source_name" label="Source account" />
+                    <AccountsInput name="destination_name" label="Destination account" />
                     <TextField
                         required
                         id="date"
@@ -80,8 +56,6 @@ export default function NewTxn() {
                         align="center"
                         margin="normal"
                         autoComplete="off"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
                         slotProps={{
                             htmlInput: { inputMode: 'decimal', pattern: '[0-9.,]*' }
                         }}
@@ -91,7 +65,7 @@ export default function NewTxn() {
                         name="submitButton"
                         type="submit"
                         loading={submitted}
-                        disabled={submitted || !isFormValid}
+                        disabled={submitted}
                         startIcon={<SaveIcon />}
                         loadingPosition="start"
                         sx={{ m: 1 }}
