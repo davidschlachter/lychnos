@@ -63,6 +63,8 @@ export default function AccountsInput(props) {
             id={props.name}
             openOnFocus
             options={account_options}
+            value={props.value || ''}
+            onInputChange={props.onInputChange}
             getOptionLabel={(option) => option.label}
             renderOption={(props, option) => (
                 <Box component="li" {...props}>
