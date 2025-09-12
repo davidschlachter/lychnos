@@ -1,8 +1,10 @@
 package firefly
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -62,8 +64,14 @@ func (f *Firefly) Categories() ([]Category, error) {
 		return nil, fmt.Errorf("got status %d", resp.StatusCode)
 	}
 
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("reading body: %w", err)
+	}
+	log.Printf("Categories: Response code: %d, JSON: %s", resp.StatusCode, string(b))
+
 	var rawResults []rawCategory
-	json.NewDecoder(resp.Body).Decode(&rawResults)
+	json.NewDecoder(bytes.NewReader(b)).Decode(&rawResults)
 
 	results := make([]Category, 0)
 
@@ -118,10 +126,16 @@ func (f *Firefly) ListCategoryTotals(start, end time.Time) ([]CategoryTotal, err
 		return nil, fmt.Errorf("got status %d", resp.StatusCode)
 	}
 
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("reading body: %w", err)
+	}
+	log.Printf("ListCategoryTotals: Response code: %d, JSON: %s", resp.StatusCode, string(b))
+
 	var rawResults struct {
 		Data []rawCategoryTotal `json:"data"`
 	}
-	json.NewDecoder(resp.Body).Decode(&rawResults)
+	json.NewDecoder(bytes.NewReader(b)).Decode(&rawResults)
 
 	var results []CategoryTotal
 
@@ -178,10 +192,16 @@ func (f *Firefly) FetchCategoryTotal(catID int, start, end time.Time) ([]Categor
 		return nil, fmt.Errorf("got status %d", resp.StatusCode)
 	}
 
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("reading body: %w", err)
+	}
+	log.Printf("FetchCategoryTotal: Response code: %d, JSON: %s", resp.StatusCode, string(b))
+
 	var rawResults struct {
 		Data rawCategoryTotal `json:"data"`
 	}
-	json.NewDecoder(resp.Body).Decode(&rawResults)
+	json.NewDecoder(bytes.NewReader(b)).Decode(&rawResults)
 
 	var results []CategoryTotal
 
