@@ -64,6 +64,7 @@ export default function AccountsInput(props) {
             openOnFocus
             options={account_options}
             getOptionLabel={(option) => option.label}
+            autoComplete="off"
             renderOption={(props, option) => (
                 <Box component="li" {...props}>
                     {option.display_string}

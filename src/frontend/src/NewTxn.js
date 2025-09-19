@@ -30,6 +30,7 @@ export default function NewTxn() {
                         variant="outlined"
                         align="center"
                         margin="normal"
+                        autoComplete="off"
                     />
                     <AccountsInput name="source_name" label="Source account" />
                     <AccountsInput name="destination_name" label="Destination account" />
@@ -41,6 +42,7 @@ export default function NewTxn() {
                         variant="outlined"
                         align="center"
                         margin="normal"
+                        autoComplete="off"
                         // en-CA is different between iOS Safari and every other
                         // browser! However, fr-CA seems to always be
                         // yyyy-mm-dd.

@@ -41,6 +41,7 @@ export default function CategoriesInput(props) {
             disableClearable={false}
             options={response.map(c => (c.name)).sort()}
             sx={{ width: 300 }}
+            autoComplete="off"
             renderInput={(params) => <TextField
                 {...params}
                 label={props.label}
