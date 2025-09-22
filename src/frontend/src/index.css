@@ -1,5 +1,6 @@
-html, body {
-	height: 100vh;
+html,
+body {
+  height: 100vh;
 }
 
 body {
@@ -10,7 +11,11 @@ body {
 }
 
 #root {
-	display: flex;
-	flex-direction: column;
-	height: 100vh;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+#saveButton {
+  margin-bottom: 5em;
 }

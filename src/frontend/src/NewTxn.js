@@ -63,6 +63,7 @@ export default function NewTxn() {
                         }}
                     />
                     <LoadingButton
+                        id="saveButton"
                         variant="contained"
                         name="submitButton"
                         type="submit"
