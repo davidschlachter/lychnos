@@ -329,6 +329,44 @@ func (f *Firefly) InvalidateCacheIfAccountBalancesHaveChanged(c *categorybudget.
 	return nil
 }
 
+// InvalidateCacheIfCategoriesHaveChanged does the same thing as
+// InvalidateCacheIfAccountBalancesHaveChanged, but for categories. This makes
+// initial setup easier, or invalidates the cache if you happen to edit the
+// categories. Since we validate that you're not creating new categories in the
+// lychnos frontend, it's important to keep the cache up-to-date.
+func (f *Firefly) InvalidateCacheIfCategoriesHaveChanged(c *categorybudget.CategoryBudgets, b *budget.Budgets) error {
+	cachedCategories, err := f.CachedCategories()
+	if err != nil {
+		return err
+	}
+
+	freshCategories, err := f.Categories()
+	if err != nil {
+		return err
+	}
+
+	if len(cachedCategories) != len(freshCategories) {
+		f.invalidateTransactionsCache()
+		return f.RefreshCaches(c, b)
+	}
+
+	for _, freshCategory := range freshCategories {
+		var found bool
+		for _, cachedCategory := range cachedCategories {
+			if freshCategory.ID == cachedCategory.ID && freshCategory.Name == cachedCategory.Name {
+				found = true
+				break
+			}
+		}
+		if !found {
+			f.invalidateTransactionsCache()
+			return f.RefreshCaches(c, b)
+		}
+	}
+
+	return nil
+}
+
 // refreshCategoryTxnCache will invalidate cache entries related to a particular
 // category and time. This should be called after creating a transaction.
 func (f *Firefly) refreshCategoryTxnCache(tgt categoryTotalsKey) {

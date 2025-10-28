@@ -112,7 +112,11 @@ func main() {
 		for range time.Tick(time.Minute) {
 			err = f.InvalidateCacheIfAccountBalancesHaveChanged(c, b)
 			if err != nil {
-				fmt.Printf("Failed to check for stale cache: %s", err)
+				log.Printf("Failed to check for stale cache: %s", err)
+			}
+			err = f.InvalidateCacheIfCategoriesHaveChanged(c, b)
+			if err != nil {
+				log.Printf("Failed to check for stale categories: %s", err)
 			}
 		}
 	}(c, b)
