@@ -30,6 +30,16 @@ func main() {
 	if fireflyBase == "" {
 		log.Fatal("Got empty FIREFLY_URL, expected a value to be set.")
 	}
+	var listenPort int
+	listenPortFromUser := os.Getenv("PORT")
+	if listenPortFromUser == "" {
+		listenPort = 8080
+	} else {
+		listenPort, err = strconv.Atoi(listenPortFromUser)
+		if err != nil {
+			log.Fatalf("Invalid PORT, expected an integer: %s", err.Error())
+		}
+	}
 
 	bigPictureIgnore := map[int]struct{}{}
 	bigPictureIgnoreString := os.Getenv("BIG_PICTURE_IGNORE")
@@ -108,5 +118,5 @@ func main() {
 	}(c, b)
 
 	log.Println("Listening for connections...")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", listenPort), nil))
 }
