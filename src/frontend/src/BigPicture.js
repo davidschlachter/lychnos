@@ -54,7 +54,7 @@ export default function BigPicture() {
             <Header back_visibility="visible" title="Big Picture"></Header>
             <Box sx={{ p: 2, pb: 8 }}>
                 <Typography variant="body1" component="div" align="center" gutterBottom>
-                    Our net worth is currently <span class="bigPictureNumber">${formatDollars(net_worth)}</span>
+                    Net worth is currently <span class="bigPictureNumber">${formatDollars(net_worth)}</span>
                 </Typography>
                 <br />
                 <Typography variant="h6" component="div" align="center" gutterBottom>
