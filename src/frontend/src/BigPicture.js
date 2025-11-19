@@ -107,10 +107,10 @@ export default function BigPicture() {
                     Retirement
                 </Typography>
                 <Typography variant="body1" component="div" align="center" gutterBottom>
-                    Based on our 12-month expenses, we need ${formatDollars(Math.round(savingsNeededToRetire / 1000) * 1000)} to retire.
+                    Based on 12-month expenses, need ${formatDollars(Math.round(savingsNeededToRetire / 1000) * 1000)} to retire.
                 </Typography>
                 <Typography variant="body1" component="div" align="center" gutterBottom>
-                    Based on our 12-month savings rate, this will take <span class="bigPictureNumber">{Math.round(yearsToSave)} years</span> (i.e. {current_year + Math.round(yearsToSave)})
+                    Based on 12-month savings rate, this will take <span class="bigPictureNumber">{Math.round(yearsToSave)} years</span> (i.e. {current_year + Math.round(yearsToSave)})
                 </Typography>
             </Box>
         </>
