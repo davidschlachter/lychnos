@@ -21,6 +21,8 @@ export default function AccountIcon(props) {
         "483": "483.png",
         "912": "912.png",
         "1258": "1258.png",
+        "1499": "1.png",
+        "1948": "3.png",
     };
     let icon = icons["0"];
     if (props.account_id in icons) {
