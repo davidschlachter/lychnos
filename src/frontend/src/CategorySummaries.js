@@ -128,7 +128,7 @@ class CategorySummaries extends React.Component {
                 <>
                     <Header back_visibility="hidden" title="Category summaries" budgetedit={true}></Header>
                     <Box sx={{ p: 2, pb: 8 }}>
-                        <TableContainer component={Paper} style={{ "overflow-y": "hidden" }}>
+                        <TableContainer component={Paper} style={{ "overflowY": "hidden" }}>
                             <Table style={{ "width": "100%" }}>
                                 <TableHead>
                                     <TableRow>
