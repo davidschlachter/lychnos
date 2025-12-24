@@ -1,10 +1,10 @@
 import React from 'react';
 import './CategorySummaries.css';
-import AmountLeft from './AmountLeft';
 import FillBar from './FillBar.js'
 import Spinner from './Spinner.js'
 import Box from '@mui/material/Box';
 import Header from './Header.js';
+import LeftToday from './LeftToday';
 import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -134,7 +134,7 @@ class CategorySummaries extends React.Component {
                                     <TableRow>
                                         <TableCell>Category</TableCell>
                                         <TableCell>Progress</TableCell>
-                                        <TableCell>Left&nbsp;per month</TableCell>
+                                        <TableCell>Have today</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -147,7 +147,7 @@ class CategorySummaries extends React.Component {
                                                 'textAlign': "right",
                                                 'fontSize': "110%",
                                                 'fontWeight': "600"
-                                            }}><AmountLeft amount={item.amount} sum={item.sum} timeSpent={timeSpent}></AmountLeft></TableCell>
+                                            }}><LeftToday actual={item.sum} budgetted={item.amount} timeSpent={timeSpent} /></TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>
