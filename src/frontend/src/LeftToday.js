@@ -1,13 +1,8 @@
-import { useTheme } from '@mui/material/styles';
-
-const red = '#ff5e00';
-const green = '#a2ff00';
+import './LeftToday.css';
 
 function LeftToday(props) {
-    const theme = useTheme();
-
     let sign = '';
-    let color = theme.palette.text.primary;
+    let budgetStatus = 'budgetStatusOkay';
 
     const actualAbs = Math.abs(props.actual)
     const budgettedAbs = Math.abs(props.budgetted)
@@ -16,15 +11,16 @@ function LeftToday(props) {
 
     // If the category is beyond where we would expect it to be right now...
     if (actualAbs > budgettedAbs * timeSpentFraction) {
-        sign = '-';
+        sign = '−';
+        budgetStatus = 'budgetStatusCaution';
         if (props.budgetted > 0) {
             // Celebrate income categories greater than target
-            color = green;
+            budgetStatus = 'budgetStatusExceedExpectations';
         } else if (actualAbs > budgettedAbs * timeSpentPlusOneMonthFraction) {
             // Only make the text red if we're outside four weeks of spending.
             // This will allow us to pay a monthly expense like rent without the
             // category going red every time.
-            color = red;
+            budgetStatus = 'budgetStatusDanger';
         }
     }
     const underOver = Math.round(
@@ -34,9 +30,7 @@ function LeftToday(props) {
     );
 
     return (
-        <span style={{
-            "color": color
-        }}>{sign}{underOver}</span>
+        <span className={budgetStatus}>{sign}{underOver}</span>
     );
 }
 
