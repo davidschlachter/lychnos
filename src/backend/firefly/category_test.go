@@ -32,6 +32,9 @@ func TestCategories(t *testing.T) {
 	if c[0].ID != 4 {
 		t.Fatalf("Got %d as Category ID, wanted 4", c[0].ID)
 	}
+	if c[0].AutocompleteIgnore != false {
+		t.Fatalf("Expected AutocompleteIgnore to be false")
+	}
 }
 
 func TestListCategoryTotals(t *testing.T) {

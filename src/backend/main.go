@@ -66,14 +66,29 @@ func main() {
 			bigPictureIncome[categoryID] = struct{}{}
 		}
 	}
+
+	autocompleteIgnoredCategories := map[int]struct{}{}
+	autocompleteIgnoredCategoriesString := os.Getenv("AUTOCOMPLETE_CATEGORIES_IGNORE")
+	if autocompleteIgnoredCategoriesString != "" {
+		autocompleteIgnoredCategoriesSlice := strings.Split(autocompleteIgnoredCategoriesString, ",")
+		for i := range autocompleteIgnoredCategoriesSlice {
+			categoryID, err := strconv.Atoi(autocompleteIgnoredCategoriesSlice[i])
+			if err != nil {
+				log.Fatalf("converting '%s' to integer for category ID: %s", autocompleteIgnoredCategoriesSlice[i], err)
+			}
+			autocompleteIgnoredCategories[categoryID] = struct{}{}
+		}
+	}
+
 	f, err := firefly.New(
 		&http.Client{Timeout: time.Second * 30},
 		firefly.Config{
 			Token: token,
 			URL:   fireflyBase,
 
-			BigPictureIgnore: bigPictureIgnore,
-			BigPictureIncome: bigPictureIncome,
+			BigPictureIgnore:              bigPictureIgnore,
+			BigPictureIncome:              bigPictureIncome,
+			AutocompleteIgnoredCategories: autocompleteIgnoredCategories,
 		},
 	)
 	if err != nil {

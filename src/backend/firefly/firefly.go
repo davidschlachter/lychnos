@@ -16,6 +16,9 @@ type Config struct {
 	// as 'income' (even when they have a negative amount) when calculating the
 	// 'Big Picture' summary.
 	BigPictureIncome map[int]struct{}
+	// AutocompleteIgnoredCategories is a set of category IDs that will be
+	// ignored when listing categories.
+	AutocompleteIgnoredCategories map[int]struct{}
 }
 
 type Firefly struct {

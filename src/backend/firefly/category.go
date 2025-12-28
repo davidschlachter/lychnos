@@ -13,8 +13,9 @@ import (
 )
 
 type Category struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
+	ID                 int    `json:"id"`
+	Name               string `json:"name"`
+	AutocompleteIgnore bool   `json:"ignore"`
 }
 
 type rawCategory struct {
@@ -73,6 +74,9 @@ func (f *Firefly) Categories() ([]Category, error) {
 			return nil, fmt.Errorf("could not convert id to int: %s", err)
 		}
 		c := Category{ID: id, Name: r.Name}
+		if _, ok := f.config.AutocompleteIgnoredCategories[id]; ok {
+			c.AutocompleteIgnore = true
+		}
 		results = append(results, c)
 	}
 
