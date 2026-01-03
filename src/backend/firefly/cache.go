@@ -186,6 +186,18 @@ func (f *Firefly) invalidateTransactionsCache() {
 	f.cache.Transactions = nil
 }
 
+func (f *Firefly) invalidateAllCaches() {
+	f.cache.mu.Lock()
+	defer f.cache.mu.Unlock()
+	log.Print("Cache: clearing all caches")
+
+	f.cache.Accounts = make([]Account, 0, len(f.cache.Accounts))
+	f.cache.BigPicture = nil
+	f.cache.Categories = make([]Category, 0, len(f.cache.Categories))
+	f.cache.CategoryTotals = map[categoryTotalsKey][]CategoryTotal{}
+	f.cache.Transactions = map[transactionsKey][]Transactions{}
+}
+
 func (f *Firefly) refreshTransactions(key transactionsKey) error {
 	f.cache.mu.Lock()
 	if f.cache.Transactions == nil {
@@ -321,7 +333,7 @@ func (f *Firefly) InvalidateCacheIfAccountBalancesHaveChanged(c *categorybudget.
 	for _, freshAssetAccount := range freshAssetAccounts {
 		for _, cachedAccount := range cachedAccounts {
 			if freshAssetAccount.ID == cachedAccount.ID && !freshAssetAccount.Attributes.CurrentBalance.Equal(cachedAccount.Attributes.CurrentBalance) {
-				f.invalidateTransactionsCache()
+				f.invalidateAllCaches()
 				return f.RefreshCaches(c, b)
 			}
 		}
@@ -346,7 +358,7 @@ func (f *Firefly) InvalidateCacheIfCategoriesHaveChanged(c *categorybudget.Categ
 	}
 
 	if len(cachedCategories) != len(freshCategories) {
-		f.invalidateTransactionsCache()
+		f.invalidateAllCaches()
 		return f.RefreshCaches(c, b)
 	}
 
@@ -359,7 +371,7 @@ func (f *Firefly) InvalidateCacheIfCategoriesHaveChanged(c *categorybudget.Categ
 			}
 		}
 		if !found {
-			f.invalidateTransactionsCache()
+			f.invalidateAllCaches()
 			return f.RefreshCaches(c, b)
 		}
 	}
