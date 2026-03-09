@@ -1,8 +1,8 @@
 module github.com/davidschlachter/lychnos/src/backend
 
-go 1.21.0
+go 1.26.0
 
-toolchain go1.24.1
+toolchain go1.26.1
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
