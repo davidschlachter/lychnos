@@ -7,7 +7,7 @@ toolchain go1.26.1
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/go-sql-driver/mysql v1.10.0
-	github.com/mattn/go-sqlite3 v1.14.38
+	github.com/mattn/go-sqlite3 v1.14.44
 	github.com/shopspring/decimal v1.4.0
 )
 
