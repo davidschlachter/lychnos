@@ -3,7 +3,7 @@ import AccountsInput from "./AccountsInput.js";
 import CategoriesInput from "./CategoriesInput.js";
 import Header from './Header.js';
 import Box from '@mui/material/Box';
-import LoadingButton from '@mui/lab/LoadingButton';
+import Button from '@mui/material/Button'
 import SaveIcon from '@mui/icons-material/Save';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
@@ -62,7 +62,7 @@ export default function NewTxn() {
                             htmlInput: { inputMode: 'decimal', pattern: '[0-9.,]*' }
                         }}
                     />
-                    <LoadingButton
+                    <Button
                         id="saveButton"
                         variant="contained"
                         name="submitButton"
@@ -74,7 +74,7 @@ export default function NewTxn() {
                         sx={{ m: 1 }}
                     >
                         Save
-                    </LoadingButton>
+                    </Button>
                 </Stack>
             </Box>
         </>

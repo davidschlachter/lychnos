@@ -1,7 +1,7 @@
 import React from 'react';
 import EditCategoryRow from './EditCategoryRow.js';
 import Box from '@mui/material/Box';
-import LoadingButton from '@mui/lab/LoadingButton';
+import Button from '@mui/material/Button'
 import Paper from '@mui/material/Paper';
 import SaveIcon from '@mui/icons-material/Save';
 import Stack from '@mui/material/Stack';
@@ -97,7 +97,7 @@ export default function EditBudget(props) {
                     </Table>
                 </TableContainer>
                 <Stack direction="column" justifyContent="center">
-                    <LoadingButton
+                    <Button
                         variant="contained"
                         name="submitButton"
                         size="large"
@@ -110,7 +110,7 @@ export default function EditBudget(props) {
                         onClick={submitForm}
                     >
                         Save
-                    </LoadingButton>
+                    </Button>
                 </Stack>
             </Box>
         </>
