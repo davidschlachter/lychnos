@@ -38,14 +38,17 @@ export default function AccountsInput(props) {
 
     // Tidy up the autocomplete arrays
     let raw_options = []
-    for (const e of response) {
-        let item = { label: e.attributes.name }
-        if (e.attributes.type === "asset") {
-            item.display_string = e.attributes.name + " ($" + e.attributes.current_balance + ")"
-        } else {
-            item.display_string = item.label
+    if (response) {
+        // Don't explode if we somehow don't get any accounts.
+        for (const e of response) {
+            let item = { label: e.attributes.name }
+            if (e.attributes.type === "asset") {
+                item.display_string = e.attributes.name + " ($" + e.attributes.current_balance + ")"
+            } else {
+                item.display_string = item.label
+            }
+            raw_options.push(item)
         }
-        raw_options.push(item)
     }
     // Remove any duplicates
     let account_options = []
@@ -80,8 +83,9 @@ export default function AccountsInput(props) {
                     variant="outlined"
                     autoComplete="off"
                     slotProps={{
-                        input: {
-                            ...params.InputProps,
+                        ...params.slotProps,
+                        htmlInput: {
+                            ...params.slotProps.htmlInput,
                             type: 'search',
                         }
                     }}
