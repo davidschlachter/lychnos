@@ -35,7 +35,6 @@ export default function CategoriesInput(props) {
     }
     return (
         <Autocomplete
-            disablePortal
             id={props.name}
             openOnFocus
             disableClearable={false}
